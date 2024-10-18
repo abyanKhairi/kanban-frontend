@@ -4,13 +4,25 @@ import LoginPage from "../Pages/LoginPage/LoginPage";
 import DashboardPage from "../Pages/Dashboard/DashboardPage";
 import RegisterPage from "../Pages/RegisterPage/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
-import BoardPage from "../Pages/BoardPage/Board";
+import Board from "../Pages/BoardPage/Board";
+
+// import { useAuth } from '../Context/useAuth'; // Import useAuth hook
+
+// const LoginOrDashboard = () => {
+//     const { isLoggedIn } = useAuth(); // Get the login state
+//     return isLoggedIn() ? <DashboardPage /> : <LoginPage />;
+// };
+
 export const router = createBrowserRouter([
+
+
+
     {
         path: "/",
         element: <App />,
         children: [
             { path: "login", element: <LoginPage /> },
+            { path: "/", element: <LoginPage /> },
             { path: "register", element: <RegisterPage /> },
             {
                 path: "dashboard", element:
@@ -19,11 +31,10 @@ export const router = createBrowserRouter([
                     </ProtectedRoute>
             },
             {
-                path: "boards", element:
-                    <ProtectedRoute >
-                        <BoardPage />
-                    </ProtectedRoute>
-            },
+                path: "board/:id", element: <ProtectedRoute>
+                    <Board />
+                </ProtectedRoute>
+            }
         ],
     },
 ]);

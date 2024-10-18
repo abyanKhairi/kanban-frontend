@@ -40,16 +40,8 @@ export const UserProvider = ({ children }: Props) => {
     const registerUser = async (email: string, name: string, password: string) => {
         await RegisterAPI(email, name, password).then((res) => {
             if (res) {
-                localStorage.setItem("token", res?.data.token);
-                const userObj = {
-                    name: res?.data.user.name,
-                    email: res?.data.user.email,
-                }
-                localStorage.setItem("user", JSON.stringify(userObj));
-                setToken(res?.data.token!);
-                setUser(userObj!);
-                // toast.success("Login Success!")
-                navigate("/dashboard")
+                toast.success("Register Success!")
+                navigate("/login")
             }
         }).catch((e) => toast.warning("Server Error"))
     };
@@ -67,10 +59,10 @@ export const UserProvider = ({ children }: Props) => {
                 localStorage.setItem("user", JSON.stringify(userObj));
                 setToken(res?.data.token!);
                 setUser(userObj!);
-                // toast.success("Login Success!")
+                toast.success("Login Success!")
                 navigate("/dashboard")
             }
-        }).catch((e) => toast.warning("Server Error"))
+        }).catch((e) => toast.error("Login Error"))
     };
 
     const isLoggedIn = () => {
@@ -78,6 +70,7 @@ export const UserProvider = ({ children }: Props) => {
     };
 
     const logout = () => {
+        toast.success("Logout Success!")
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);

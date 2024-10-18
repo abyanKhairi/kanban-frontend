@@ -3,9 +3,6 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../Context/useAuth';
 import SidebarLayout from '../Pages/Layouts/Sidebar';
 import NavbarLayout from '../Pages/Layouts/Navbar';
-// import Navbar from '../Pages/Layouts/Navbar';
-// import { SidebarLayout } from '../Pages/Layouts/Sidebar';
-
 type Props = { children: React.ReactNode }
 
 export default function ProtectedRoute({ children }: Props) {
