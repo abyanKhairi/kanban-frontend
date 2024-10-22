@@ -1,15 +1,23 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { Board } from "../Models/Board";
-import { BoardAPI, BoardDeleteAPI, BoardGetAPI, BoardGetByIdAPI, BoardUpdateAPI, FourBoardAPI } from "../Services/BoardService";
+import { Board, Columns, Id, Tasks } from "../Models/Board";
+import { BoardAPI, BoardDeleteAPI, BoardGetAPI, BoardGetByIdAPI, BoardUpdateAPI, ColumnsGetAPI, CreateColumnApi, deleteColumnAPI, FourBoardAPI, GetTaskAPI, UpdateColumnAPI } from "../Services/BoardService";
 import { toast } from "react-toastify";
+
 
 type BoardContextType = {
     boardCreate: (name: string, status: string) => Promise<void>;
     boards: Board[];
     getBoardById: (id: number) => Promise<Board | null>;
-    handleDeleteBoard: (id: number) => Promise<void>; // Return void since no data is returned on delete
+    handleDeleteBoard: (id: number) => Promise<void>;
     fourBoard: Board[];
     updateBoard: (id: number, status: string, name: string) => Promise<void>;
+
+    CreateColumn: (boardId: number, name: string, position: number) => Promise<void>;
+    ColumnUpdate: (id: number, name: string) => Promise<void>;
+    DeleteColumn: (id: number) => Promise<void>;
+    ColumnGet: (id: number) => Promise<Columns[]>
+
+
 }
 
 type Props = { children: React.ReactNode };
@@ -20,8 +28,12 @@ export const useBoardContext = () => useContext(BoardContext);
 
 export const BoardProvider = ({ children }: Props) => {
     const [boards, setBoard] = useState<Board[]>([]);
+    const [columns, setColumns] = useState<Columns[]>([]);
     const [fourBoard, setFourBoard] = useState<Board[]>([]);
 
+
+
+    // Untuk Board
 
     const GetBoards = async () => {
         try {
@@ -43,8 +55,6 @@ export const BoardProvider = ({ children }: Props) => {
         try {
             const res = await FourBoardAPI();
             setFourBoard(res.data.data);
-
-
         } catch (e) {
             // toast.error("Error fetching boards");
         }
@@ -101,8 +111,80 @@ export const BoardProvider = ({ children }: Props) => {
     };
 
 
+    // Akhir Board
+
+    // ------------------BATAS----------------
+
+    // Muali Column
+
+    const CreateColumn = async (boardId: number, name: string, position: number) => {
+        try {
+            const res = await CreateColumnApi(boardId, name, position);
+            const newColumn = {
+                id: res.data.data.id,
+                name: res.data.data.name,
+                position: res.data.data.position,
+                board_id: boardId,
+            };
+            setColumns(prevColumns => [...prevColumns, newColumn]);
+            toast.success("Column created successfully!");
+        } catch (error) {
+            toast.error("Error creating column");
+        }
+    };
+
+
+
+    const ColumnGet = async (id: number): Promise<Columns | null> => {
+        try {
+            const res = await ColumnsGetAPI(id);
+            const columnsBanyak: Columns = res.data.data
+            return columnsBanyak
+        } catch (error) {
+            return null;
+
+        }
+    }
+
+
+    const ColumnUpdate = async (board_id: number, id: number, name: string) => {
+        try {
+            await UpdateColumnAPI(board_id, id, name);
+            await ColumnGet(board_id);
+            setColumns(prevColumns =>
+                prevColumns.map(column =>
+                    column.id === id ? { ...column, name: name } : column
+                )
+            );
+            toast.success("Column Diupdate");
+        } catch (error) {
+            console.error("Error updating column:", error);
+            toast.error("Column gagal  Diupdate");
+            return null;
+
+        }
+    };
+
+    const DeleteColumn = async (id: number) => {
+        try {
+            await deleteColumnAPI(id);
+            await ColumnGet(id);
+            setColumns(prevColumns => prevColumns.filter(column => column.id !== id));
+            toast.success("Column Dihapus");
+        } catch (error) {
+            toast.success("Column Gagal Dihapus");
+        }
+    }
+
+
+
+
+
+
+
+
     return (
-        <BoardContext.Provider value={{ boardCreate, boards, getBoardById, handleDeleteBoard, fourBoard, updateBoard }}>
+        <BoardContext.Provider value={{ boardCreate, boards, getBoardById, handleDeleteBoard, fourBoard, updateBoard, CreateColumn, ColumnUpdate, DeleteColumn, ColumnGet }}>
             {children}
         </BoardContext.Provider>
     );

@@ -8,6 +8,8 @@ type Props = { children: React.ReactNode }
 export default function ProtectedRoute({ children }: Props) {
     const location = useLocation();
     const { isLoggedIn } = useAuth();
+
+
     return isLoggedIn() ? (
         <div>
             <NavbarLayout />
