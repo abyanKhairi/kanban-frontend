@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useBoardContext } from "../../Context/useBoard";
 import { Board, Columns, Tasks } from "../../Models/Board";
-import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import ColumnContainer from "../../Components/ColumnsContainer";
 import { SortableContext } from "@dnd-kit/sortable";
 import EditBoardModal from "../../Components/BoardEditModal";
@@ -28,17 +28,6 @@ export default function BoardDetailPage() {
     const columnsId = useMemo(() => columns.map((column) => column.id), [columns]);
 
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <Spinner className="w-16 h-16" aria-label="Center-aligned spinner example" />
-            </div>
-        );
-    }
-
-    if (!board) {
-        return <p>Error: Board not found.</p>;
-    }
 
 
 
@@ -148,6 +137,18 @@ export default function BoardDetailPage() {
     };
 
 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <Spinner className="w-16 h-16" aria-label="Center-aligned spinner example" />
+            </div>
+        );
+    }
+
+    if (!board) {
+        return <p>Error: Board not found.</p>;
+    }
+
 
 
     // -------------------------------------DRAG----------------------------------------
@@ -160,6 +161,7 @@ export default function BoardDetailPage() {
         newArray.splice(toIndex, 0, movedItem);
         return newArray;
     };
+
     const onDragStart = (event: DragStartEvent) => {
         const { current } = event.active.data;
         if (current?.type === "Column") {
@@ -170,91 +172,74 @@ export default function BoardDetailPage() {
         }
     };
 
+
     const onDragEnd = async (event: DragEndEvent) => {
-        setActiveColumn(null)
-        setActiveTask(null)
         const { active, over } = event;
-        if (!over) return;
+        setActiveColumn(null);
+        setActiveTask(null);
+
+        if (!over) return; // No drop target
 
         const activeData = active.data.current;
         const overData = over.data.current;
 
+        // Handle task drag and drop
         if (activeData?.type === "Task") {
             const activeColumnId = activeData.tasks.column_id;
-            const overColumnId = overData?.tasks?.column_id || activeColumnId; // Kolom tujuan
+            const overColumnId = overData?.tasks?.column_id || activeColumnId;
 
             if (activeColumnId === overColumnId) {
-                // Memindahkan tugas dalam kolom yang sama
+                // Same column: reorder tasks
                 const activeColumn = columns.find(col => col.id === activeColumnId);
-                const overTaskIndex = activeColumn?.tasks.findIndex(task => task.id === over.id);
                 const activeTaskIndex = activeColumn?.tasks.findIndex(task => task.id === active.id);
+                const overTaskIndex = activeColumn?.tasks.findIndex(task => task.id === over.id);
 
-                if (overTaskIndex !== undefined && activeTaskIndex !== undefined) {
-                    const newTasks = [...activeColumn.tasks];
-                    const [movedTask] = newTasks.splice(activeTaskIndex, 1);
-                    newTasks.splice(overTaskIndex, 0, movedTask);
-
+                if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
+                    const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
                     setColumns(prevColumns => prevColumns.map(col =>
                         col.id === activeColumnId ? { ...col, tasks: newTasks } : col
                     ));
 
-                    // Update posisi tugas di backend
+                    // Update task position in the backend
                     try {
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${movedTask.id}`, { position: overTaskIndex });
-                        console.log('Task position updated successfully.');
+                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id}`, { position: overTaskIndex });
                     } catch (error) {
                         console.error('Error updating task position:', error);
                     }
                 }
             } else {
-                // Memindahkan tugas antar kolom
+                // Different column: move task to a new column
                 const activeColumn = columns.find(col => col.id === activeColumnId);
                 const overColumn = columns.find(col => col.id === overColumnId);
+                const taskToMove = activeColumn.tasks.find(task => task.id === active.id);
 
-                if (activeColumn && overColumn) {
-                    const activeTaskIndex = activeColumn.tasks.findIndex(task => task.id === active.id);
-                    const taskToMove = activeColumn.tasks[activeTaskIndex];
-
+                if (taskToMove) {
                     const updatedActiveTasks = activeColumn.tasks.filter(task => task.id !== active.id);
-
-                    // Menentukan posisi untuk task yang akan dipindahkan
-                    let newOverTasks = [...overColumn.tasks];
-                    let newTaskPosition;
-
-                    if (newOverTasks.length > 0) {
-                        // Jika kolom tujuan memiliki task, gunakan posisi terakhir
-                        newTaskPosition = newOverTasks.length; // menempatkan di akhir
-                        newOverTasks.push({ ...taskToMove, column_id: overColumn.id });
-                    } else {
-                        // Jika kolom tujuan kosong, berikan posisi 1
-                        newTaskPosition = 0; // Posisi 1 untuk kolom kosong
-                        newOverTasks = [{ ...taskToMove, column_id: overColumn.id }];
-                    }
+                    const newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
 
                     setColumns(prevColumns => prevColumns.map(col => {
-                        if (col.id === activeColumn.id) {
+                        if (col.id === activeColumnId) {
                             return { ...col, tasks: updatedActiveTasks };
                         }
-                        if (col.id === overColumn.id) {
+                        if (col.id === overColumnId) {
                             return { ...col, tasks: newOverTasks };
                         }
                         return col;
                     }));
 
-                    // Update column_id dan posisi tugas di backend setelah ditambahkan ke kolom baru
+                    // Update task's column and position
                     try {
-                        // Update column_id
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id });
-                        // Update posisi
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newTaskPosition });
-                        console.log('Task moved to new column and position updated successfully.');
+                        await Promise.all([
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
+                        ]);
                     } catch (error) {
                         console.error('Error moving task to new column:', error);
                     }
                 }
             }
         } else if (activeData?.type === "Column") {
-            // Logika pemindahan kolom (sama seperti sebelumnya)
+            // Handle column drag and drop
             const activeIndex = columns.findIndex(col => col.id === active.id);
             const overIndex = columns.findIndex(col => col.id === over.id);
 
@@ -262,21 +247,19 @@ export default function BoardDetailPage() {
                 const newColumns = arrayMove(columns, activeIndex, overIndex);
                 setColumns(newColumns);
 
-                const positionUpdates = newColumns.map((column, index) =>
-                    axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
-                );
-
+                // Update column positions in the backend
                 try {
+                    const positionUpdates = newColumns.map((column, index) =>
+                        axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
+                    );
                     await Promise.all(positionUpdates);
-                    console.log('Column positions updated successfully.');
                 } catch (error) {
                     console.error('Error updating column positions:', error);
-                    setColumns(columns);
+                    setColumns(columns); // Revert to previous state on error
                 }
             }
         }
     };
-
 
 
     return (
@@ -343,4 +326,3 @@ export default function BoardDetailPage() {
         </div>
     );
 }
-
