@@ -27,10 +27,6 @@ export default function BoardDetailPage() {
 
     const columnsId = useMemo(() => columns.map((column) => column.id), [columns]);
 
-
-
-
-
     useEffect(() => {
         const fetchBoard = async () => {
             try {
@@ -136,7 +132,6 @@ export default function BoardDetailPage() {
         }
     };
 
-
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -149,11 +144,7 @@ export default function BoardDetailPage() {
         return <p>Error: Board not found.</p>;
     }
 
-
-
     // -------------------------------------DRAG----------------------------------------
-
-
 
     const onDragStart = (event: DragStartEvent) => {
         const { current } = event.active.data;
@@ -293,21 +284,6 @@ export default function BoardDetailPage() {
                                 Add Column
                             </button>
                         </div>
-                        {/* {createPortal(
-                            <DragOverlay>
-                                {activeColumn && (
-                                    <ColumnContainer
-                                        column={activeColumn}
-                                        ColumnUpdate={ColumnUpdate}
-                                        deleteColumn={DeleteColumn}
-                                        createTask={createTask}
-                                        tasks={activeColumn.tasks}
-                                    />
-                                )}
-                                {activeTask && (<TaskContainer tasks={activeTask} />)}
-                            </DragOverlay>,
-                            document.body
-                        )} */}
                         {createPortal(
                             <DragOverlay>
                                 {activeColumn && (
