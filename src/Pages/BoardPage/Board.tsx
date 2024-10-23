@@ -2,9 +2,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useBoardContext } from "../../Context/useBoard";
 import { Board, Columns, Tasks } from "../../Models/Board";
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import ColumnContainer from "../../Components/ColumnsContainer";
-import { SortableContext } from "@dnd-kit/sortable";
+import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import EditBoardModal from "../../Components/BoardEditModal";
 import { Spinner } from "flowbite-react";
 import axios from "axios";
@@ -19,7 +19,7 @@ export default function BoardDetailPage() {
     const [activeColumn, setActiveColumn] = useState<Columns | null>(null);
     const [activeTask, setActiveTask] = useState<Tasks | null>(null);
     const sensors = useSensors(useSensor(PointerSensor, {
-        activationConstraint: { distance: 65 },
+        activationConstraint: { distance: 17 },
     }));
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -155,13 +155,6 @@ export default function BoardDetailPage() {
 
 
 
-    const arrayMove = (array: any[], fromIndex: number, toIndex: number) => {
-        const newArray = Array.from(array);
-        const [movedItem] = newArray.splice(fromIndex, 1);
-        newArray.splice(toIndex, 0, movedItem);
-        return newArray;
-    };
-
     const onDragStart = (event: DragStartEvent) => {
         const { current } = event.active.data;
         if (current?.type === "Column") {
@@ -172,27 +165,27 @@ export default function BoardDetailPage() {
         }
     };
 
-
     const onDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveColumn(null);
         setActiveTask(null);
 
-        if (!over) return; // No drop target
+        if (!over) return; // Jika task tidak dipindahkan ke target apapun
 
         const activeData = active.data.current;
         const overData = over.data.current;
 
-        // Handle task drag and drop
+        // Handle drag-and-drop untuk task
         if (activeData?.type === "Task") {
+            // Ambil ID kolom aktif dan kolom tujuan
             const activeColumnId = activeData.tasks.column_id;
             const overColumnId = overData?.tasks?.column_id || activeColumnId;
 
+            // Jika task dipindahkan dalam kolom yang sama (Reordering)
             if (activeColumnId === overColumnId) {
-                // Same column: reorder tasks
                 const activeColumn = columns.find(col => col.id === activeColumnId);
-                const activeTaskIndex = activeColumn?.tasks.findIndex(task => task.id === active.id);
-                const overTaskIndex = activeColumn?.tasks.findIndex(task => task.id === over.id);
+                const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
+                const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
 
                 if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
                     const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
@@ -200,21 +193,21 @@ export default function BoardDetailPage() {
                         col.id === activeColumnId ? { ...col, tasks: newTasks } : col
                     ));
 
-                    // Update task position in the backend
+                    // Memperbarui posisi task di backend
                     try {
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id}`, { position: overTaskIndex });
+                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
                     } catch (error) {
                         console.error('Error updating task position:', error);
                     }
                 }
             } else {
-                // Different column: move task to a new column
+                // Jika task dipindahkan ke kolom berbeda (Moving task to a different column)
                 const activeColumn = columns.find(col => col.id === activeColumnId);
                 const overColumn = columns.find(col => col.id === overColumnId);
-                const taskToMove = activeColumn.tasks.find(task => task.id === active.id);
+                const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
 
                 if (taskToMove) {
-                    const updatedActiveTasks = activeColumn.tasks.filter(task => task.id !== active.id);
+                    const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
                     const newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
 
                     setColumns(prevColumns => prevColumns.map(col => {
@@ -227,7 +220,7 @@ export default function BoardDetailPage() {
                         return col;
                     }));
 
-                    // Update task's column and position
+                    // Update kolom task dan posisinya di backend
                     try {
                         await Promise.all([
                             axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
@@ -238,8 +231,9 @@ export default function BoardDetailPage() {
                     }
                 }
             }
-        } else if (activeData?.type === "Column") {
-            // Handle column drag and drop
+        }
+        // Handle drag-and-drop untuk column
+        else if (activeData?.type === "Column") {
             const activeIndex = columns.findIndex(col => col.id === active.id);
             const overIndex = columns.findIndex(col => col.id === over.id);
 
@@ -247,7 +241,7 @@ export default function BoardDetailPage() {
                 const newColumns = arrayMove(columns, activeIndex, overIndex);
                 setColumns(newColumns);
 
-                // Update column positions in the backend
+                // Memperbarui posisi kolom di backend
                 try {
                     const positionUpdates = newColumns.map((column, index) =>
                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
@@ -255,11 +249,12 @@ export default function BoardDetailPage() {
                     await Promise.all(positionUpdates);
                 } catch (error) {
                     console.error('Error updating column positions:', error);
-                    setColumns(columns); // Revert to previous state on error
+                    setColumns(columns); // Kembalikan state jika ada error
                 }
             }
         }
     };
+
 
 
     return (
@@ -275,11 +270,13 @@ export default function BoardDetailPage() {
                 <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px]">
                     {/* <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver} sensors={sensors}> */}
                     <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors}>
+                        {/* <DndContext sensors={sensors}> */}
+                        {/* <DndContext > */}
                         <div className="m-auto flex gap-4">
                             <SortableContext items={columnsId}>
                                 {columns.map(colum => (
                                     <ColumnContainer
-                                        key={`${colum.id}-${colum.name}`}
+                                        key={colum.id}
                                         column={colum}
                                         ColumnUpdate={ColumnUpdate}
                                         deleteColumn={DeleteColumn}
@@ -296,6 +293,21 @@ export default function BoardDetailPage() {
                                 Add Column
                             </button>
                         </div>
+                        {/* {createPortal(
+                            <DragOverlay>
+                                {activeColumn && (
+                                    <ColumnContainer
+                                        column={activeColumn}
+                                        ColumnUpdate={ColumnUpdate}
+                                        deleteColumn={DeleteColumn}
+                                        createTask={createTask}
+                                        tasks={activeColumn.tasks}
+                                    />
+                                )}
+                                {activeTask && (<TaskContainer tasks={activeTask} />)}
+                            </DragOverlay>,
+                            document.body
+                        )} */}
                         {createPortal(
                             <DragOverlay>
                                 {activeColumn && (
@@ -311,6 +323,7 @@ export default function BoardDetailPage() {
                             </DragOverlay>,
                             document.body
                         )}
+
                     </DndContext>
                     {isModalOpen && (
                         <EditBoardModal
