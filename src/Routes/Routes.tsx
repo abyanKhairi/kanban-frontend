@@ -5,6 +5,7 @@ import DashboardPage from "../Pages/Dashboard/DashboardPage";
 import RegisterPage from "../Pages/RegisterPage/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
 import Board from "../Pages/BoardPage/Board";
+import ProfilePage from "../Pages/ProfilePage/ProfilePage";
 
 // import { useAuth } from '../Context/useAuth'; // Import useAuth hook
 
@@ -28,6 +29,12 @@ export const router = createBrowserRouter([
                 path: "dashboard", element:
                     <ProtectedRoute >
                         <DashboardPage />
+                    </ProtectedRoute>
+            },
+            {
+                path: "profile", element:
+                    <ProtectedRoute >
+                        <ProfilePage />
                     </ProtectedRoute>
             },
             {

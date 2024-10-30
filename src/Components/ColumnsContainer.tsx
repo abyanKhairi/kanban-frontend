@@ -4,18 +4,23 @@ import { useMemo, useState } from "react";
 import { Columns, Id, Tasks } from "../Models/Board";
 import { useParams } from "react-router-dom";
 import TaskContainer from "./TasksContainer";
+import line from "../assets/VELO/line.png"
 
 interface Props {
     column: Columns;
     deleteColumn: (id: Id) => void;
     ColumnUpdate: (board_id: Id, id: Id, name: string) => void;
     createTask: (columnId: Id) => void;
+    EditTask: (id: Id, title: string, deadline?: Date, description?: string, status?: string) => void;
     tasks: Tasks[];
+    permissions: []
+    deleteTask: (column_id: Id, task_id: Id) => void;
+
 }
 
 export default function ColumnContainer(props: Props) {
     const { id } = useParams<{ id: string }>();
-    const { column, ColumnUpdate, deleteColumn, createTask, tasks } = props;
+    const { column, ColumnUpdate, deleteColumn, createTask, tasks, EditTask, permissions, deleteTask } = props;
     const [editMode, setEditMode] = useState(false);
     const [inputValue, setInputValue] = useState(column.name); // Local state for input value
     const { setNodeRef: setColumnRef, attributes: columnAttributes, listeners: columnListeners, transform: columnTransform, transition: columnTransition, isDragging: isColumnDragging } = useSortable({
@@ -24,54 +29,72 @@ export default function ColumnContainer(props: Props) {
             type: "Column",
             column,
         },
-        disabled: editMode,
+        disabled: editMode || !permissions?.manage_board,
     });
-
     const style = {
-        columnTransition,
+        transition: columnTransition,
         transform: CSS.Transform.toString(columnTransform),
-    };
+    }
 
     const tasksIds = useMemo(() => {
-        return tasks.map(task => `task-${task.id}`)
-    }, [tasks])
+        return tasks.map(task => `task-${task.id}`);
+    }, [tasks]);
 
     const handleColumnUpdate = () => {
         ColumnUpdate(id, column.id, inputValue);
         setEditMode(false);
     };
 
+
+    // const colors = {
+    //     green: '#7ecd50',
+    //     blue: '#54afe5',
+    //     red: '#f1487a',
+    //     yellow: '#fbcb41',
+    // };
+
+    // function pickRandomColor() {
+    //     const colorKeys = Object.keys(colors);
+    //     const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+    //     return colors[randomKey];
+    // }
+
+    // const randomColor = pickRandomColor(); 
     if (isColumnDragging) {
-        return <div ref={setColumnRef} style={style} className="h-[500px] border-rose-600 opacity-60 w-[350px] min-h-[500px] cursor-pointer rounded-lg bg-mainBackgoundColor border-2 flex flex-col"></div>;
+        return <div ref={setColumnRef} style={style} className=" border-[#7ecd50] opacity-60 w-[350px] max-h-[500px]  cursor-pointer rounded-lg  border-2 flex flex-col"></div>;
     }
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="w-80 rounded-lg p-4 flex flex-col gap-3">
             <div
                 ref={setColumnRef}
                 style={style}
-                className="h-[500px] w-[350px] min-h-[500px] cursor-pointer rounded-lg bg-mainBackgoundColor border-2 flex flex-col">
-
+                className={`rounded-lg flex flex-col  ${isColumnDragging ? 'h-[500px] w-[350px] min-h-[500px]' : ''} max-h-[500px]   overflow-auto`}>
                 <div
                     {...columnAttributes}
                     {...columnListeners}
-                    onDoubleClick={() => { setEditMode(true); setInputValue(column.name); }} // Set inputValue to current name
-                    className="bg-mainBackgroundColor text-md h-[60px] cursor-grab rounded rounded-b-none p-3 font-bold border-4 flex items-center justify-between">
+                    onDoubleClick={() => { setEditMode(true); setInputValue(column.name); }}
+                    className="text-gray-900  p-2 bg-[#fbcb41] flex justify-between items-center rounded-t-lg relative"
+                >
+                    <div
+                        className="absolute inset-0 rounded-t-lg"
+                        style={{
+                            backgroundImage: `url(${line})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity: 0.4,
+                        }}
+                    />
 
                     <div className="flex gap-2">
-                        <div className="flex text-white rounded-full justify-center items-center bg-slate-700 px-2 py-1 text-sm">
-                            {column.tasks.length + " Halo " + column.id} {/* Menampilkan jumlah tugas */}
-                        </div>
-                        {!editMode && column.name}
+                        {!editMode && <h3 className="font-bold">{column.name}</h3>}
                         {editMode && (
                             <input
-                                className="bg-slate-600 focus:border-rose-400 border rounded outline-none px-2"
+                                className="bg-pink-600 focus:border-rose-400 border rounded outline-none px-2"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 autoFocus
-                                onBlur={() => {
-                                    setEditMode(false);
-                                }}
+                                onBlur={() => setEditMode(false)}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter") {
                                         handleColumnUpdate();
@@ -81,24 +104,39 @@ export default function ColumnContainer(props: Props) {
                                 }}
                             />
                         )}
+                        <div className="bg-white text-center text-pink-500 rounded-full text-sm w-8 py-1">
+                            {column.tasks.length}
+                        </div>
                     </div>
-                    <button onClick={() => { deleteColumn(column.id); }} className="stroke-gray-500 hover:stroke-white hover:bg-slate-700 rounded px-1 py-2">
-                        Hapus
-                    </button>
+                    {permissions?.manage_board ?
+                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2`}>
+                            <i className="fas fa-trash-alt"></i>
+                        </button>)
+                        :
+                        ('')
+                    }
                 </div>
 
-                <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
+
+
+                <div className="flex-grow p-2 flex flex-col gap-4 overflow-y-auto max-h-[30rem]">
                     <SortableContext items={tasksIds}>
                         {tasks.map(task => (
-                            <TaskContainer key={`task-${task.id}`} tasks={task} />
+                            <TaskContainer key={`task-${task.id}`} tasks={task} EditTask={EditTask} permissions={permissions} deleteTask={deleteTask} column_id={column.id} />
                         ))}
                     </SortableContext>
                 </div>
+
+
             </div>
-            <div
-                className="flex gap-2 items-center border-gray-500 border-2 rounded-md p-4">
-                <button onClick={() => createTask(column.id)}>Add Task</button>
-            </div>
+
+            {permissions?.add_cards ? (<button
+                onClick={() => createTask(column.id)}
+                className="w-full mt-4 text-gray-700 border rounded-lg py-2 hover:bg-gray-100">
+                + New Task
+            </button>) : ('')}
+
+
         </div>
     );
 }

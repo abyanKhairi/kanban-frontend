@@ -116,12 +116,13 @@ export const UpdateColumnAPI = async (board_id: number, id: number, name: string
 
 export const deleteColumnAPI = async (id: number) => {
     try {
-        const data = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/column-delete/${id}`);
+        const data = await axios.delete(api + `/board/column-delete/${id}`);
         return data;
 
     } catch (error) {
         handleError(error);
         throw (error)
+
     }
 };
 
@@ -129,13 +130,108 @@ export const deleteColumnAPI = async (id: number) => {
 
 // -------------------------------------- TASK ---------------------------------------
 
-const fetchTasks = async (boardId: number) => {
+export const editTaskAPI = async (id: number, title: string, deadline?: Date, description?: string, status?: string) => {
     try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/kanban/board/${boardId}/tasks`);
-        return response.data; // Adjust according to your API response
+        const data = await axios.put(api + `/board/column-task/task-update/${id}`, {
+            title: title,
+            description: description,
+            deadline: deadline,
+            status: status
+        });
+        return data;
     } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-        return []; // Return empty array on error
+        handleError(error);
+        throw (error)
     }
 };
 
+export const DeleteTaskAPI = async (id: number) => {
+    try {
+        const data = await axios.delete(api + `/board/column-task/task-delete/${id}`)
+        return data;
+
+    } catch (error) {
+        handleError(error);
+        throw (error)
+
+    }
+}
+
+
+// --------------------------------------------------------- COLAB---------------------------------
+
+export const CollaboratorAPI = async (board_id: number, email: string) => {
+    try {
+        const data = await axios.post(api + `/board-member/${board_id}`, {
+            email: email
+        })
+        return data;
+    } catch (error) {
+        handleError(error);
+        throw (error)
+    }
+}
+
+
+
+export const GetPermissionsAPI = async (board_id: number) => {
+    try {
+        const response = await axios.get(`${api}/board/permissions/${board_id}`);
+        return response.data;
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+};
+
+
+export const GetCollaboratorsPermissions = async (board_id: number) => {
+    try {
+        const response = await axios.get(api + `/board/collaborator-permission/${board_id}`)
+        return response.data
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+}
+
+export const CollaboratingShowBoard = async (board_id: number) => {
+    try {
+        const response = await axios.get(api + `/board/collaborator-board/${board_id}`)
+        return response.data
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+}
+
+
+export const CollaboratorDeleteAPI = async (board_id: number, permission_id: number) => {
+    try {
+        const data = await axios.delete(api + `/board/${board_id}/permission/${permission_id}/`)
+        return data;
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+}
+
+
+
+export const CollaboratorPermissionUpdateAPI = async (permission_id: number, add_cards: boolean, edit_cards: boolean, delete_cards: boolean, add_members: boolean, manage_board: boolean) => {
+    try {
+        const data = await axios.put(api + `/board/permission-update/${permission_id}`, {
+            add_cards: add_cards,
+            edit_cards: edit_cards,
+            delete_cards: delete_cards,
+            add_members: add_members,
+            manage_board: manage_board
+        })
+
+        return data;
+    } catch (error) {
+        handleError(error);
+        throw (error)
+    }
+
+}

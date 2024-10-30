@@ -1,3 +1,5 @@
+export type Id = number | string;
+
 export type UserProfileToken = {
     name: string,
     email: string
@@ -5,6 +7,9 @@ export type UserProfileToken = {
 }
 
 export type UserProfile = {
+    id: number,
     name: string,
     email: string,
+    avatar: string
 }
+

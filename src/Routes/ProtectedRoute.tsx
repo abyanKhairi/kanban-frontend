@@ -9,13 +9,19 @@ export default function ProtectedRoute({ children }: Props) {
     const location = useLocation();
     const { isLoggedIn } = useAuth();
 
+    const isProfilePage = window.location.pathname === '/profile';
+
 
     return isLoggedIn() ? (
         <div>
             <NavbarLayout />
             < SidebarLayout />
-            <div className="md:pl-[250px] pl-[60px] pr-[20px] pt-[70px] w-full h-full overflow-y-auto">
-                {children}
+            <div className={`${isProfilePage ? 'p-4 ' : 'p-4 sm:ml-64'}`}>
+                <div className={`${isProfilePage ? 'p-4 ml-16 mt-16' : 'p-4 ml-24 mt-32'}`}>
+                    <div>
+                        {children}
+                    </div>
+                </div>
             </div>
         </div>
 

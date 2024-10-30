@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify'
 import { UserProvider } from './Context/useAuth'
 import { Outlet } from 'react-router-dom'
 import { BoardProvider } from './Context/useBoard'
+import { AnimatePresence } from 'framer-motion'
 // import { Sidebar } from './Pages/Layouts/Sidebar'
 
 function App() {
@@ -12,9 +13,10 @@ function App() {
       <UserProvider>
         <BoardProvider>
 
+
           <Outlet />
           <ToastContainer
-            position="top-center"
+            position="top-right"
             autoClose={5000}
             hideProgressBar={false}
             newestOnTop={false}
