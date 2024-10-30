@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Board } from "../Models/Board";
+import { Board, Columns } from "../Models/Board";
 import { handleError } from "../Helpers/HandleError";
 
 
@@ -76,7 +76,7 @@ export const BoardUpdateAPI = async (id: number, newInput: { name: string, statu
 
 export const CreateColumnApi = async (boardId: number, name: string, position: number) => {
     try {
-        const data = await axios.post<Column>(api + `/board/column/${boardId}`, {
+        const data = await axios.post<Columns>(api + `/board/column/${boardId}`, {
             name: name,
             position: position
         });
@@ -130,9 +130,9 @@ export const deleteColumnAPI = async (id: number) => {
 
 // -------------------------------------- TASK ---------------------------------------
 
-export const editTaskAPI = async (id: number, title: string, deadline?: Date, description?: string, status?: string) => {
+export const editTaskAPI = async (board_id: number, id: number, title: string, deadline?: Date, description?: string, status?: string) => {
     try {
-        const data = await axios.put(api + `/board/column-task/task-update/${id}`, {
+        const data = await axios.put(api + `/board/${board_id}/column-task/task-update/${id}`, {
             title: title,
             description: description,
             deadline: deadline,
@@ -145,9 +145,9 @@ export const editTaskAPI = async (id: number, title: string, deadline?: Date, de
     }
 };
 
-export const DeleteTaskAPI = async (id: number) => {
+export const DeleteTaskAPI = async (board_id: number, id: number) => {
     try {
-        const data = await axios.delete(api + `/board/column-task/task-delete/${id}`)
+        const data = await axios.delete(api + `/board/${board_id}/column-task/task-delete/${id}`)
         return data;
 
     } catch (error) {

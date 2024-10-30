@@ -254,7 +254,7 @@ export default function BoardDetailPage() {
         };
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/kanban/board/column-task/task', newTask);
+            const response = await axios.post(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task`, newTask);
             const data = response.data;
 
             if (data.success) {
@@ -295,7 +295,7 @@ export default function BoardDetailPage() {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/column-task/task-delete/${task_id}`);
+                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-delete/${task_id}`);
                 const data = response.data;
 
                 if (data.success) {
@@ -310,8 +310,7 @@ export default function BoardDetailPage() {
                     toast.error("Error Delete Task");
                 }
             } catch (error) {
-                console.error("Error deleting task:", error);
-                toast.error("Errorr");
+                toast.error("Failed To Delete Task");
             }
         }
     };
@@ -340,111 +339,117 @@ export default function BoardDetailPage() {
         }
     };
 
-    // const onDragEnd = async (event: DragEndEvent) => {
-    //     const { active, over } = event;
-    //     setActiveColumn(null);
-    //     setActiveTask(null);
+    const onDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        setActiveColumn(null);
+        setActiveTask(null);
 
-    //     if (!over) return;
-    //     const activeData = active.data.current;
-    //     const overData = over.data.current;
+        if (!over) return;
+        const activeData = active.data.current;
+        const overData = over.data.current;
 
-    //     if (activeData?.type === "Task") {
-    //         const activeColumnId = activeData.tasks.column_id;
-    //         const overColumnId = overData?.tasks?.column_id || activeColumnId;
-    //         if (activeColumnId === overColumnId) {
-    //             const activeColumn = columns.find(col => col.id === activeColumnId);
-    //             const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
-    //             const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
+        if (activeData?.type === "Task") {
+            // const activeColumnId = activeData.tasks.column_id;
+            // const overColumnId = overData?.tasks?.column_id || activeColumnId;
 
-    //             if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
-    //                 const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
-    //                 setColumns(prevColumns => prevColumns.map(col =>
-    //                     col.id === activeColumnId ? { ...col, tasks: newTasks } : col
-    //                 ));
+            const activeColumnId = activeData.tasks.column_id;
+            const overColumnId = overData?.column?.id || overData?.tasks?.column_id || activeColumnId;
 
-    //                 try {
-    //                     const posisi = await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
-    //                     if (posisi) {
-    //                         toast.success("Task Berhasil Dipindahkan");
-    //                     } else {
-    //                         toast.error("Tidak Bisa Memindahkan Task");
-    //                     }
-    //                 } catch (error) {
-    //                     handleError(error);
-    //                     toast.error("Tidak Bisa Memindahkan Task");
-    //                 }
-    //             }
-    //         } else {
-    //             const activeColumn = columns.find(col => col.id === activeColumnId);
-    //             const overColumn = columns.find(col => col.id === overColumnId);
-    //             const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
+            if (activeColumnId === overColumnId) {
+                const activeColumn = columns.find(col => col.id === activeColumnId);
+                const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
+                const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
 
-    //             if (taskToMove) {
-    //                 const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
-    //                 let newOverTasks;
+                if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
+                    const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
+                    setColumns(prevColumns => prevColumns.map(col =>
+                        col.id === activeColumnId ? { ...col, tasks: newTasks } : col
+                    ));
 
-    //                 if (overColumn.tasks.length === 0) {
-    //                     // If no tasks in the target column, place the task at index 1
-    //                     newOverTasks = [{ ...taskToMove, column_id: overColumn.id }];
-    //                 } else {
-    //                     newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
-    //                 }
+                    try {
+                        const posisi = await axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
+                        if (posisi) {
+                            toast.success("Task Berhasil Dipindahkan");
+                        } else {
+                            toast.error("Tidak Bisa Memindahkan Task");
+                        }
+                    } catch (error) {
+                        handleError(error);
+                        toast.error("Tidak Bisa Memindahkan Task");
+                    }
+                }
+            } else {
+                const activeColumn = columns.find(col => col.id === activeColumnId);
+                const overColumn = columns.find(col => col.id === overColumnId);
+                const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
 
-    //                 setColumns(prevColumns => prevColumns.map(col => {
-    //                     if (col.id === activeColumnId) {
-    //                         return { ...col, tasks: updatedActiveTasks };
-    //                     }
-    //                     if (col.id === overColumnId) {
-    //                         return { ...col, tasks: newOverTasks };
-    //                     }
-    //                     return col;
-    //                 }));
+                if (taskToMove) {
+                    const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
+                    let newOverTasks;
 
-    //                 try {
-    //                     const columAndPosisi = await Promise.all([
-    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
-    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
-    //                     ]);
+                    if (overColumn.tasks.length === 0) {
+                        newOverTasks = [{ ...taskToMove, column_id: overColumn.id }];
+                    } else {
+                        newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
+                    }
 
-    //                     if (columAndPosisi) {
-    //                         toast.success("Task Berhasil Dipindahkan");
-    //                     } else {
-    //                         toast.error("Tidak Bisa Memindahkan Task");
-    //                     }
-    //                 } catch (error) {
-    //                     console.error('Error moving task to new column:', error);
-    //                 }
-    //             }
-    //         }
-    //     }
+                    setColumns(prevColumns => prevColumns.map(col => {
+                        if (col.id === activeColumnId) {
+                            return { ...col, tasks: updatedActiveTasks };
+                        }
+                        if (col.id === overColumnId) {
+                            return { ...col, tasks: newOverTasks };
+                        }
+                        return col;
+                    }));
 
-    //     else if (activeData?.type === "Column") {
-    //         const activeIndex = columns.findIndex(col => col.id === active.id);
-    //         const overIndex = columns.findIndex(col => col.id === over.id);
+                    try {
+                        const columAndPosisi = await Promise.all([
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
+                        ]);
 
-    //         if (activeIndex !== overIndex) {
-    //             const newColumns = arrayMove(columns, activeIndex, overIndex);
-    //             setColumns(newColumns);
+                        if (columAndPosisi) {
+                            toast.success("Task Berhasil Dipindahkan");
+                        } else {
+                            toast.error("Tidak Bisa Memindahkan Task");
+                        }
+                    } catch (error) {
+                        console.error('Error moving task to new column:', error);
+                    }
+                }
+            }
+        }
 
-    //             try {
-    //                 const positionUpdates = newColumns.map((column, index) =>
-    //                     axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
-    //                 );
-    //                 const culum = await Promise.all(positionUpdates);
-    //                 if (culum) {
-    //                     toast.success("Column Berhasil Dipindahlan");
-    //                 } else {
-    //                     toast.error("Column Gagal Dipindahlan");
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error updating column positions:', error);
-    //                 setColumns(columns);
-    //                 toast.warning("Something Wrong");
-    //             }
-    //         }
-    //     }
-    // };
+        else if (activeData?.type === "Column") {
+            const activeIndex = columns.findIndex(col => col.id === active.id);
+            const overIndex = columns.findIndex(col => col.id === over.id);
+
+            if (activeIndex !== overIndex) {
+                const newColumns = arrayMove(columns, activeIndex, overIndex);
+                setColumns(newColumns);
+
+                try {
+                    const positionUpdates = newColumns.map((column, index) =>
+                        axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-position/${column.id}`, { position: index })
+                    );
+                    const culum = await Promise.all(positionUpdates);
+                    if (culum) {
+                        toast.success("Column Berhasil Dipindahlan");
+                    } else {
+                        toast.error("Column Gagal Dipindahlan");
+                    }
+                } catch (error) {
+                    console.error('Error updating column positions:', error);
+                    setColumns(columns);
+                    toast.warning("Something Wrong");
+                }
+            }
+        }
+    };
+
+
+
 
 
     const onDragOver = (event: DragOverEvent) => {
@@ -464,7 +469,7 @@ export default function BoardDetailPage() {
         }
     };
 
-    const onDragEnd = async (event: DragEndEvent) => {
+    const onDragEnds = async (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveColumn(null);
         setActiveTask(null);
@@ -490,7 +495,7 @@ export default function BoardDetailPage() {
                     ));
 
                     try {
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
+                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
                     } catch (error) {
                         console.error('Error updating task position:', error);
                     }
@@ -516,8 +521,8 @@ export default function BoardDetailPage() {
 
                     try {
                         await Promise.all([
-                            axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
-                            axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
+                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
                         ]);
                     } catch (error) {
                         console.error('Error moving task to new column:', error);
@@ -664,8 +669,6 @@ export default function BoardDetailPage() {
                                             tasks={activeColumn.tasks}
                                             permissions={permissions}
                                             deleteTask={deleteTask}
-
-
                                         />
                                     )}
                                     {activeTask && (<TaskContainer tasks={activeTask} EditTask={EditTask} deleteTask={deleteTask}

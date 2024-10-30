@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Id, Tasks } from "../Models/Board";
 import { Modal } from "flowbite-react";
 import { useSortable } from "@dnd-kit/sortable";
@@ -6,17 +6,18 @@ import { CSS } from "@dnd-kit/utilities";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useAuth } from "../Context/useAuth";
+import { useParams } from "react-router-dom";
 
 interface Props {
     tasks: Tasks;
-    EditTask: (id: Id, title: string, deadline?: Date, description?: string, status?: string) => void,
+    EditTask: (board_id: number, id: Id, title: string, deadline?: Date, description?: string, status?: string) => void,
     permissions: []
     deleteTask: (columnId: Id, task_id: Id) => void;
     columnId: number
 }
 
 export default function TaskContainer(props: Props) {
-    const { tasks, EditTask, permissions, columnId, deleteTask } = props
+    const { tasks, EditTask, permissions, column_id, deleteTask } = props
     const [openModal, setOpenModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editDes, setEditDes] = useState(false);
@@ -38,8 +39,6 @@ export default function TaskContainer(props: Props) {
         },
         disabled: editMode || (!canManageBoard && !userTask)
     });
-
-    // console.log(permissions)
 
     const style = {
         transition: taskTransition,
@@ -66,13 +65,13 @@ export default function TaskContainer(props: Props) {
 
     const handleEditTaskTitle = () => {
         if (!titleValue.trim()) return;
-        EditTask(tasks.id, titleValue);
+        EditTask(id, tasks.id, titleValue);
         setEditMode(false);
     }
 
 
     const handleEditDescription = () => {
-        EditTask(tasks.id, titleValue, deadlineValue, descriptionValue, statusValue);
+        EditTask(id, tasks.id, titleValue, deadlineValue, descriptionValue, statusValue);
         setEditDes(false);
 
     }
@@ -102,7 +101,7 @@ export default function TaskContainer(props: Props) {
     const handleDateChange = (e) => {
         const tanggal = e.target.value
         setDeadlineValue(tanggal);
-        EditTask(tasks.id, titleValue, tanggal, descriptionValue, statusValue);
+        EditTask(id, tasks.id, titleValue, tanggal, descriptionValue, statusValue);
 
         setShowDatePicker(false);
     };
@@ -115,7 +114,7 @@ export default function TaskContainer(props: Props) {
     const handleStatusChange = (e) => {
         const status = e.target.value;
         setStatusValue(status);
-        EditTask(tasks.id, titleValue, deadlineValue, descriptionValue, status);
+        EditTask(id, tasks.id, titleValue, deadlineValue, descriptionValue, status);
         setShowOptions(false);
     };
 

@@ -188,6 +188,12 @@ export default function ProfilePage({ }: Props) {
         setAvatar(user.avatar)
     }
 
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const visible = () => {
+        setIsPasswordVisible(!isPasswordVisible);
+
+    }
+
 
     return (
 
@@ -242,51 +248,7 @@ export default function ProfilePage({ }: Props) {
                             </form>
 
                         </div>
-
-                        <form
-                            className={`${formPassword ? 'block' : 'hidden'} z-10 `}
-                            onSubmit={handleUpdatePassword}>
-                            <div className="space-y-2">
-                                <h3 className="text-xl  font-semibold text-gray-900 dark:text-white">Change Password</h3>
-
-                                <div className="flex gap-3">
-                                    <div className="">
-
-                                        <div>
-                                            <input
-                                                className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
-                                                id="currentPassword" type="password" placeholder="Current Password" value={current_password} onChange={(e) =>
-                                                    setCurrent_Password(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="gap-2">
-                                        <div className="mb-2">
-
-                                            <input
-                                                className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
-                                                id="newPassword" type="password" placeholder="New Password" value={new_password} onChange={(e) =>
-                                                    setNew_Password(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-
-                                            <input
-                                                className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
-                                                id="passwordConfirmation" placeholder="Confirm New Password" type="password" value={new_password_confirmation}
-                                                onChange={(e) => setNew_Password_confirmation(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type="submit" className="py-1 px-4 mx-auto flex bg-blue-500 text-white rounded hover:bg-blue-600">Change Password</button>
-                            </div>
-                        </form>
-
-
-                        <div className={`z-10 mt-14 ${formAvatar ? 'hidden' : 'block'} ${formPassword ? 'hidden' : 'block'} `} >
+                        <div className={`z-10 mt-14 ${formAvatar ? 'hidden' : 'block'} `} >
                             <h2
                                 className={`${formName ? 'hidden' : 'block'} text-2xl font-bold`}
                                 style={{ minHeight: '40px' }}
@@ -318,17 +280,58 @@ export default function ProfilePage({ }: Props) {
                                 </div>
                             </form>
 
+                            <form
+                                className={`${formPassword ? 'block' : 'hidden'} z-10 `}
+                                onSubmit={handleUpdatePassword}>
+                                <div className="space-y-2">
+                                    <div className="grid  gap-3">
+                                        <div className="">
+
+                                            <label htmlFor="currentPassword">Current Password</label>
+                                            <div>
+                                                <input
+                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    id="currentPassword" type="password" placeholder="Current Password" value={current_password} onChange={(e) =>
+                                                        setCurrent_Password(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="gap-2 flex">
+                                            <div className="mb-2 grid">
+                                                <label htmlFor="currentPassword">Current Password</label>
+                                                <input
+                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    id="newPassword" type="password" placeholder="New Password" value={new_password} onChange={(e) =>
+                                                        setNew_Password(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="mb-2 grid">
+
+                                                <label htmlFor="currentPassword">Current Password</label>
+                                                <input
+                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    id="passwordConfirmation" placeholder="Confirm New Password" type="password" value={new_password_confirmation}
+                                                    onChange={(e) => setNew_Password_confirmation(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" className="py-1 px-4 mx-auto flex bg-blue-500 text-white rounded hover:bg-blue-600">Change Password</button>
+                                </div>
+                            </form>
 
 
 
                             <p
-                                className={`${formEmail ? 'hidden' : 'block'} text-gray-600 text-xl `}>{user.email}</p>
+                                className={`${formEmail ? 'hidden' : 'block'} ${formPassword ? 'hidden' : 'block'} text-gray-600 text-xl `}>{user.email}</p>
+
                             <form
                                 className={`${formEmail ? 'block' : 'hidden'}`}
                                 onSubmit={handleUpdateEmail}
                             >
                                 <div className="flex gap-2">
-                                    {/* <h3 className="text-xl font-medium text-gray-900 dark:text-white">Edit Email</h3> */}
                                     <div>
                                         <input
                                             id="email"
@@ -341,18 +344,24 @@ export default function ProfilePage({ }: Props) {
                                             placeholder="Enter new email"
                                         />
                                     </div>
-                                    <div>
+
+                                    <div className="relative">
                                         <input
                                             id="password"
-                                            type="password"
+                                            type={isPasswordVisible ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="text-xl py-2 px-4 border border-gray-300 rounded w-full"
+                                            className="text-xl py-2 px-4 border border-gray-300 rounded w-full pr-10"
                                             autoComplete="off"
                                             placeholder="Enter password"
                                         />
+                                        <i
+                                            onClick={visible}
+                                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 fa-solid ${isPasswordVisible ? 'fa-eye-slash' : 'fa-eye'} cursor-pointer`}
+                                        ></i>
                                     </div>
                                 </div>
+
                                 <button
                                     type="submit"
                                     className="mt-4 py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -360,8 +369,13 @@ export default function ProfilePage({ }: Props) {
                                     Update Email
                                 </button>
                             </form>
-
                         </div>
+
+
+
+
+
+
                         <button onClick={toggleDropdown}
                             className="w-12 h-12 ml-auto mt-12 mr-16 z-10 flex items-center justify-center text-white bg-[#54afe5] rounded-full hover:bg-blue-500">
                             <i className="  fas fa-edit"></i>
@@ -369,8 +383,8 @@ export default function ProfilePage({ }: Props) {
                     </div>
 
                     {isDropdownOpen && (
-                        <div className="absolute right-36 top-36 w-48 bg-white rounded-lg shadow-lg z-20">
-                            <ul className="py-2">
+                        <div className="absolute right-4 top-56 w-56 bg-white rounded-lg shadow-xl z-20">
+                            <ul className="py-4 px-5 justify-center">
                                 <li onClick={profile} className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
                                     Profile
                                 </li>
@@ -390,118 +404,7 @@ export default function ProfilePage({ }: Props) {
                         </div>
                     )}
 
-                    <div className="flex items-center justify-center align-middle text-center">
-                        {/* <form
-                            className={`${formPassword ? 'block' : 'hidden'}  `}
-                            onSubmit={handleUpdatePassword}>
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Change Password</h3>
-
-                                <div className="flex">
-                                    <div className="">
-
-                                        <div>
-                                            <div className="mb-2 block">
-                                                <Label htmlFor="currentPassword" value="Current Password" />
-                                            </div>
-                                            <TextInput id="currentPassword" type="password" value={current_password} onChange={(e) =>
-                                                setCurrent_Password(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="">
-                                        <div>
-                                            <div className="mb-2 block">
-                                                <Label htmlFor="newPassword" value="New Password" />
-                                            </div>
-                                            <TextInput id="newPassword" type="password" value={new_password} onChange={(e) =>
-                                                setNew_Password(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <div className="mb-2 block">
-                                                <Label htmlFor="passwordConfirmation" value="Confirm New Password" />
-                                            </div>
-                                            <TextInput id="passwordConfirmation" type="password" value={new_password_confirmation}
-                                                onChange={(e) => setNew_Password_confirmation(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type="submit">Change Password</button>
-                            </div>
-                        </form> */}
-
-                        {/* <form
-                            className={`${formEmail ? 'block' : 'hidden'}  `}
-                            onSubmit={handleUpdateEmail}>
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Edit Email</h3>
-                                <div className="flex">
-                                    <div >
-                                        <div className="mb-2 block">
-                                            <Label htmlFor="email" value="Your Email" />
-                                        </div>
-                                        <TextInput id="email" type="email" value={email} onChange={(e) =>
-                                            setEmail(e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <div className="mb-2 block">
-                                            <Label htmlFor="password" value="Current Password" />
-                                        </div>
-                                        <TextInput id="password" type="password" value={password} onChange={(e) =>
-                                            setPassword(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="submit">Update Email</button>
-                        </form> */}
-
-
-                        {/* <form
-                            className={`${formName ? 'block' : 'hidden'}  `}
-                            onSubmit={handleUpdateName}>
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Edit Name</h3>
-                                <div>
-                                    <div className="mb-2 block">
-                                        <Label htmlFor="boardName" value="Your Name" />
-                                    </div>
-                                    <TextInput id="boardName" type="text" value={name} onChange={(e) =>
-                                        setName(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                            <button type="submit">Update Name</button>
-                        </form> */}
-
-
-                        {/* <form
-                            className={`${formAvatar ? 'block' : 'hidden'}  `}
-                            onSubmit={handleUpdateAvatar}>
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Element Bender</h3>
-                                <div className="flex flex-wrap space-x-4">
-                                    {avatars.map((avatarImage, index) => (
-                                        <div key={index} className="flex flex-col items-center">
-                                            <img src={avatarImage.src} alt={avatarImage.name} className={`w-20 h-20 rounded-full cursor-pointer ${avatar === avatarImage.name ? 'border-2 border-blue-500' : ''}`}
-                                                onClick={() => setAvatar(avatarImage.name)}
-                                            />
-                                            <Label htmlFor={`avatar${index + 1}`}>{avatarImage.title}</Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <button type="submit">Update Avatar</button>
-                        </form> */}
-
-
-
-                    </div>
+                    <div className="flex items-center justify-center align-middle text-center" />
 
                     {/* {formAvatar || formEmail || formName || formPassword || ( */}
                     <div className="mt-20 mx-16">
@@ -514,12 +417,12 @@ export default function ProfilePage({ }: Props) {
                                         key={index}
                                         className="border rounded-lg p-4 shadow-lg bg-white"
                                     >
-                                        <p className="text-gray-500">Public & Private</p>
+                                        <p className="text-gray-500">{board.status}</p>
                                         <h3 className="text-lg font-bold mb-2">{board.name}</h3>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
                                             <div className="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" style={{ width: '75%' }}></div>
                                         </div>
-                                        <p className="text-green-500">{board.status}</p>
+                                        <p className="text-green-500 font-bold">Owner</p>
                                         <hr className="mt-5 mb-4" />
                                         <p className="text-gray-500">Created: {new Date(board.created_at).toLocaleDateString()}</p>
                                     </div>
