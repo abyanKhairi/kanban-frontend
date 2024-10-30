@@ -60,11 +60,25 @@ export default function ColumnContainer(props: Props) {
     // }
 
     // const randomColor = pickRandomColor(); 
+
+    const getBackgroundColor = () => {
+        const colors = ["bg-pink-500", "bg-blue-500", "bg-yellow-300", "bg-lime-500"];
+        return colors[(column.id - 1) % colors.length];
+    };
+
+    const getDragColor = () => {
+        const colors = ["border-rose-600", "border-blue-400", "border-yellow-400", "border-lime-500"];
+        return colors[(column.id - 1) % colors.length];
+    };
+
+    const getInputColor = () => {
+        const colors = ["bg-pink-600", "bg-blue-600", "bg-yellow-400", "bg-lime-600"];
+        return colors[(column.id - 1) % colors.length];
+    };
+
     if (isColumnDragging) {
         return <div ref={setColumnRef} style={style} className={` ${getDragColor()} opacity-60 w-[350px] max-h-[500px]  cursor-pointer rounded-lg  border-2 flex flex-col`}></div>;
     }
-
-
 
     return (
         <div className="w-80 rounded-lg p-4 flex flex-col gap-3">
@@ -76,7 +90,7 @@ export default function ColumnContainer(props: Props) {
                     {...columnAttributes}
                     {...columnListeners}
                     onDoubleClick={() => { setEditMode(true); setInputValue(column.name); }}
-                    className="text-gray-900  p-2 bg-[#fbcb41] flex justify-between items-center rounded-t-lg relative"
+                    className={`${getBackgroundColor()} text-md mb-1 text-white h-[55px] cursor-grab rounded-t-xl rounded-b-none p-4 font-bold flex items-center justify-between relative`}
                 >
                     <div
                         className="absolute inset-0 rounded-t-lg"
@@ -111,7 +125,7 @@ export default function ColumnContainer(props: Props) {
                         </div>
                     </div>
                     {permissions?.manage_board ?
-                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2 z-10`}>
+                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2`}>
                             <i className="fas fa-trash-alt"></i>
                         </button>)
                         :
@@ -125,20 +139,15 @@ export default function ColumnContainer(props: Props) {
                     <SortableContext items={tasksIds}>
                         {tasks.map(task => (
                             <TaskContainer key={`task-${task.id}`} tasks={task} EditTask={EditTask} permissions={permissions} deleteTask={deleteTask} columnId={column.id} />
-                        ))} 
+                        ))}
                     </SortableContext>
                 </div>
-
-
+                {permissions?.add_cards ? (<button
+                    onClick={() => createTask(column.id)}
+                    className="w-72 text-gray-700 border-2 mt-[7px] rounded-lg py-[11px] hover:bg-gray-100">
+                    + New Task
+                </button>) : ('')}
             </div>
-
-            {permissions?.add_cards ? (<button
-                onClick={() => createTask(column.id)}
-                className="w-full mt-4 text-gray-700 border rounded-lg py-2 hover:bg-gray-100">
-                + New Task
-            </button>) : ('')}
-
-
         </div>
     );
 }

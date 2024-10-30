@@ -17,7 +17,8 @@ interface Props {
 }
 
 export default function TaskContainer(props: Props) {
-    const { tasks, EditTask, permissions, column_id, deleteTask } = props
+    const { id } = useParams<{ id: string }>();
+    const { tasks, EditTask, permissions, columnId, deleteTask } = props
     const [openModal, setOpenModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editDes, setEditDes] = useState(false);

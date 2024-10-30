@@ -254,7 +254,7 @@ export default function BoardDetailPage() {
         };
 
         try {
-            const response = await axios.post(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task`, newTask);
+            const response = await axios.post('http://127.0.0.1:8000/api/kanban/board/column-task/task', newTask);
             const data = response.data;
 
             if (data.success) {
@@ -295,7 +295,7 @@ export default function BoardDetailPage() {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-delete/${task_id}`);
+                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/column-task/task-delete/${task_id}`);
                 const data = response.data;
 
                 if (data.success) {
@@ -310,7 +310,8 @@ export default function BoardDetailPage() {
                     toast.error("Error Delete Task");
                 }
             } catch (error) {
-                toast.error("Failed To Delete Task");
+                console.error("Error deleting task:", error);
+                toast.error("Errorr");
             }
         }
     };
@@ -349,12 +350,8 @@ export default function BoardDetailPage() {
         const overData = over.data.current;
 
         if (activeData?.type === "Task") {
-            // const activeColumnId = activeData.tasks.column_id;
-            // const overColumnId = overData?.tasks?.column_id || activeColumnId;
-
             const activeColumnId = activeData.tasks.column_id;
-            const overColumnId = overData?.column?.id || overData?.tasks?.column_id || activeColumnId;
-
+            const overColumnId = overData?.tasks?.column_id || overData?.column?.id || activeColumnId;
             if (activeColumnId === overColumnId) {
                 const activeColumn = columns.find(col => col.id === activeColumnId);
                 const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
@@ -388,6 +385,7 @@ export default function BoardDetailPage() {
                     let newOverTasks;
 
                     if (overColumn.tasks.length === 0) {
+                        // If no tasks in the target column, place the task at index 1
                         newOverTasks = [{ ...taskToMove, column_id: overColumn.id }];
                     } else {
                         newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
@@ -449,9 +447,6 @@ export default function BoardDetailPage() {
     };
 
 
-
-
-
     const onDragOver = (event: DragOverEvent) => {
         const { active, over } = event;
         if (active.data.current?.type === "Task") {
@@ -469,87 +464,87 @@ export default function BoardDetailPage() {
         }
     };
 
-    const onDragEnds = async (event: DragEndEvent) => {
-        const { active, over } = event;
-        setActiveColumn(null);
-        setActiveTask(null);
+    // const onDragEnd = async (event: DragEndEvent) => {
+    //     const { active, over } = event;
+    //     setActiveColumn(null);
+    //     setActiveTask(null);
 
-        if (!over) return;
+    //     if (!over) return;
 
-        const activeData = active.data.current;
-        const overData = over.data.current;
+    //     const activeData = active.data.current;
+    //     const overData = over.data.current;
 
-        if (activeData?.type === "Task") {
-            const activeColumnId = activeData.tasks.column_id;
-            const overColumnId = overData?.column?.id || activeColumnId;
+    //     if (activeData?.type === "Task") {
+    //         const activeColumnId = activeData.tasks.column_id;
+    //         const overColumnId = overData?.column?.id || overData?.task?.id || activeColumnId;
 
-            if (activeColumnId === overColumnId) {
-                const activeColumn = columns.find(col => col.id === activeColumnId);
-                const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
-                const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
+    //         if (activeColumnId === overColumnId) {
+    //             const activeColumn = columns.find(col => col.id === activeColumnId);
+    //             const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
+    //             const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
 
-                if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
-                    const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
-                    setColumns(prevColumns => prevColumns.map(col =>
-                        col.id === activeColumnId ? { ...col, tasks: newTasks } : col
-                    ));
+    //             if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
+    //                 const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
+    //                 setColumns(prevColumns => prevColumns.map(col =>
+    //                     col.id === activeColumnId ? { ...col, tasks: newTasks } : col
+    //                 ));
 
-                    try {
-                        await axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
-                    } catch (error) {
-                        console.error('Error updating task position:', error);
-                    }
-                }
-            } else {
-                const activeColumn = columns.find(col => col.id === activeColumnId);
-                const overColumn = columns.find(col => col.id === overColumnId);
-                const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
+    //                 try {
+    //                     await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
+    //                 } catch (error) {
+    //                     console.error('Error updating task position:', error);
+    //                 }
+    //             }
+    //         } else {
+    //             const activeColumn = columns.find(col => col.id === activeColumnId);
+    //             const overColumn = columns.find(col => col.id === overColumnId);
+    //             const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
 
-                if (taskToMove) {
-                    const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
-                    const newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
+    //             if (taskToMove) {
+    //                 const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
+    //                 const newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
 
-                    setColumns(prevColumns => prevColumns.map(col => {
-                        if (col.id === activeColumnId) {
-                            return { ...col, tasks: updatedActiveTasks };
-                        }
-                        if (col.id === overColumnId) {
-                            return { ...col, tasks: newOverTasks };
-                        }
-                        return col;
-                    }));
+    //                 setColumns(prevColumns => prevColumns.map(col => {
+    //                     if (col.id === activeColumnId) {
+    //                         return { ...col, tasks: updatedActiveTasks };
+    //                     }
+    //                     if (col.id === overColumnId) {
+    //                         return { ...col, tasks: newOverTasks };
+    //                     }
+    //                     return col;
+    //                 }));
 
-                    try {
-                        await Promise.all([
-                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
-                            axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
-                        ]);
-                    } catch (error) {
-                        console.error('Error moving task to new column:', error);
-                    }
-                }
-            }
-        }
-        else if (activeData?.type === "Column") {
-            const activeIndex = columns.findIndex(col => col.id === active.id);
-            const overIndex = columns.findIndex(col => col.id === over.id);
+    //                 try {
+    //                     await Promise.all([
+    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
+    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
+    //                     ]);
+    //                 } catch (error) {
+    //                     console.error('Error moving task to new column:', error);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     else if (activeData?.type === "Column") {
+    //         const activeIndex = columns.findIndex(col => col.id === active.id);
+    //         const overIndex = columns.findIndex(col => col.id === over.id);
 
-            if (activeIndex !== overIndex) {
-                const newColumns = arrayMove(columns, activeIndex, overIndex);
-                setColumns(newColumns);
+    //         if (activeIndex !== overIndex) {
+    //             const newColumns = arrayMove(columns, activeIndex, overIndex);
+    //             setColumns(newColumns);
 
-                try {
-                    const positionUpdates = newColumns.map((column, index) =>
-                        axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
-                    );
-                    await Promise.all(positionUpdates);
-                } catch (error) {
-                    console.error('Error updating column positions:', error);
-                    setColumns(columns);
-                }
-            }
-        }
-    };
+    //             try {
+    //                 const positionUpdates = newColumns.map((column, index) =>
+    //                     axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
+    //                 );
+    //                 await Promise.all(positionUpdates);
+    //             } catch (error) {
+    //                 console.error('Error updating column positions:', error);
+    //                 setColumns(columns);
+    //             }
+    //         }
+    //     }
+    // };
 
     return (
 
@@ -669,6 +664,8 @@ export default function BoardDetailPage() {
                                             tasks={activeColumn.tasks}
                                             permissions={permissions}
                                             deleteTask={deleteTask}
+
+
                                         />
                                     )}
                                     {activeTask && (<TaskContainer tasks={activeTask} EditTask={EditTask} deleteTask={deleteTask}
