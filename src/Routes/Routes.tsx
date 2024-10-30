@@ -6,6 +6,7 @@ import RegisterPage from "../Pages/RegisterPage/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
 import Board from "../Pages/BoardPage/Board";
 import ProfilePage from "../Pages/ProfilePage/ProfilePage";
+import TeamsPage from "../Pages/Teams/TeamsPage";
 
 // import { useAuth } from '../Context/useAuth'; // Import useAuth hook
 
@@ -40,6 +41,11 @@ export const router = createBrowserRouter([
             {
                 path: "board/:id", element: <ProtectedRoute>
                     <Board />
+                </ProtectedRoute>
+            },
+            {
+                path: "teams", element: <ProtectedRoute>
+                    <TeamsPage />
                 </ProtectedRoute>
             }
         ],

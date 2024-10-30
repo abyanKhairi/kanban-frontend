@@ -254,7 +254,7 @@ export default function BoardDetailPage() {
         };
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/kanban/board/column-task/task', newTask);
+            const response = await axios.post(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task`, newTask);
             const data = response.data;
 
             if (data.success) {
