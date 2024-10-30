@@ -45,24 +45,11 @@ export default function ColumnContainer(props: Props) {
         setEditMode(false);
     };
 
-
-    // const colors = {
-    //     green: '#7ecd50',
-    //     blue: '#54afe5',
-    //     red: '#f1487a',
-    //     yellow: '#fbcb41',
-    // };
-
-    // function pickRandomColor() {
-    //     const colorKeys = Object.keys(colors);
-    //     const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
-    //     return colors[randomKey];
-    // }
-
-    // const randomColor = pickRandomColor(); 
     if (isColumnDragging) {
         return <div ref={setColumnRef} style={style} className=" border-[#7ecd50] opacity-60 w-[350px] max-h-[500px]  cursor-pointer rounded-lg  border-2 flex flex-col"></div>;
     }
+
+
 
     return (
         <div className="w-80 rounded-lg p-4 flex flex-col gap-3">
@@ -73,7 +60,10 @@ export default function ColumnContainer(props: Props) {
                 <div
                     {...columnAttributes}
                     {...columnListeners}
-                    onDoubleClick={() => { setEditMode(true); setInputValue(column.name); }}
+                    onDoubleClick={permissions?.manage_board ? () => {
+                        setEditMode(true);
+                        setInputValue(column.name);
+                    } : undefined}
                     className="text-gray-900  p-2 bg-[#fbcb41] flex justify-between items-center rounded-t-lg relative"
                 >
                     <div
@@ -109,7 +99,7 @@ export default function ColumnContainer(props: Props) {
                         </div>
                     </div>
                     {permissions?.manage_board ?
-                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2`}>
+                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2 z-10`}>
                             <i className="fas fa-trash-alt"></i>
                         </button>)
                         :
@@ -130,13 +120,15 @@ export default function ColumnContainer(props: Props) {
 
             </div>
 
-            {permissions?.add_cards ? (<button
-                onClick={() => createTask(column.id)}
-                className="w-full mt-4 text-gray-700 border rounded-lg py-2 hover:bg-gray-100">
-                + New Task
-            </button>) : ('')}
+            {
+                permissions?.add_cards ? (<button
+                    onClick={() => createTask(column.id)}
+                    className="w-full mt-4 text-gray-700 border rounded-lg py-2 hover:bg-gray-100">
+                    + New Task
+                </button>) : ('')
+            }
 
 
-        </div>
+        </div >
     );
 }

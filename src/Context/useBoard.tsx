@@ -19,7 +19,7 @@ type BoardContextType = {
     ColumnUpdate: (id: number, name: string) => Promise<void>;
     DeleteColumn: (id: number) => Promise<void>;
     ColumnGet: (id: number) => Promise<Columns[]>
-    EditTask: (id: number, title: string, deadline?: Date, description?: string, status?: string) => Promise<void>
+    EditTask: (board_id: number, id: number, title: string, deadline?: Date, description?: string, status?: string) => Promise<void>
 
     CollaboratorInvite: (board_id: number, email: string) => Promise<void>
     fetchPermissions: (id: number) => Promise<void>
@@ -227,9 +227,9 @@ export const BoardProvider = ({ children }: Props) => {
 
     // ----------------------------------------------- TASK--------------------------
 
-    const EditTask = async (id: number, title: string, deadline?: Date, description?: string, status?: string) => {
+    const EditTask = async (board_id: number, id: number, title: string, deadline?: Date, description?: string, status?: string) => {
         try {
-            await editTaskAPI(id, title, deadline, description, status);
+            await editTaskAPI(board_id, id, title, deadline, description, status);
             setColumns(prevTask =>
                 prevTask.map(task =>
                     task.id === id ? { ...task, title, description, deadline, status } : task
@@ -239,30 +239,6 @@ export const BoardProvider = ({ children }: Props) => {
         } catch (error) {
             toast.error("Task Gagal Diupdate");
             throw (error);
-        }
-    }
-
-
-    const DeleteTask = async (id: number) => {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        });
-
-        if (result.isConfirmed) {
-            try {
-                await deleteColumnAPI(id);
-                await ColumnGet(id);
-                setColumns(prevColumns => prevColumns.filter(column => column.id !== id));
-                toast.success("Column Dihapus");
-            } catch (error) {
-                toast.error("Error To Delete Board");
-            }
         }
     }
 
