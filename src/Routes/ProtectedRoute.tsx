@@ -10,6 +10,7 @@ export default function ProtectedRoute({ children }: Props) {
     const { isLoggedIn } = useAuth();
 
     const isProfilePage = window.location.pathname === '/profile';
+    const isTeamsPage = window.location.pathname === '/teams';
 
 
     return isLoggedIn() ? (
@@ -17,7 +18,7 @@ export default function ProtectedRoute({ children }: Props) {
             <NavbarLayout />
             < SidebarLayout />
             <div className={`${isProfilePage ? 'p-4 ' : 'p-4 sm:ml-64'}`}>
-                <div className={`${isProfilePage ? 'p-4 mx-10 mt-16' : 'p-4 ml-11 mt-32'}`}>
+                <div className={`${isProfilePage ? 'p-4 mx-10 mt-16' : 'p-4 ml-11 mt-32'} ${isTeamsPage ? 'p-4 mx-10 mt-16' : ''} `}>
                     <div>
                         {children}
                     </div>

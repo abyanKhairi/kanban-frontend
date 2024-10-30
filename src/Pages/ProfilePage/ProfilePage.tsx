@@ -420,7 +420,7 @@ export default function ProfilePage({ }: Props) {
                                         <p className="text-gray-500">{board.status}</p>
                                         <h3 className="text-lg font-bold mb-2">{board.name}</h3>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                                            <div className="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" style={{ width: '75%' }}></div>
+                                            <div className="bg-green-400 h-2.5 rounded-full dark:bg-blue-500" style={{ width: '75%' }}></div>
                                         </div>
                                         <p className="text-green-500 font-bold">Owner</p>
                                         <hr className="mt-5 mb-4" />

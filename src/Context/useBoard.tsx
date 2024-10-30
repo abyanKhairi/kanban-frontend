@@ -62,6 +62,7 @@ export const BoardProvider = ({ children }: Props) => {
     };
 
     useEffect(() => {
+        if (!isLoggedIn()) return;
         GetBoards();
     }, [isLoggedIn]);
 
