@@ -295,7 +295,7 @@ export default function BoardDetailPage() {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/column-task/task-delete/${task_id}`);
+                const response = await axios.delete(`http://127.0.0.1:8000/api/kanban/board/${id}/column-task/task-delete/${task_id}`);
                 const data = response.data;
 
                 if (data.success) {
@@ -429,7 +429,7 @@ export default function BoardDetailPage() {
 
                 try {
                     const positionUpdates = newColumns.map((column, index) =>
-                        axios.put(`http://127.0.0.1:8000/api/kanban/board/${id}/column-position/${column.id}`, { position: index })
+                        axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
                     );
                     const culum = await Promise.all(positionUpdates);
                     if (culum) {

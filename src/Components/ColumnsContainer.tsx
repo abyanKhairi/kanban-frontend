@@ -125,7 +125,7 @@ export default function ColumnContainer(props: Props) {
                         </div>
                     </div>
                     {permissions?.manage_board ?
-                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2`}>
+                        (<button onClick={() => deleteColumn(column.id)} className={`${editMode ? 'hidden' : 'block'} text-white hover:text-rose-700 rounded px-2 z-10`}>
                             <i className="fas fa-trash-alt"></i>
                         </button>)
                         :
