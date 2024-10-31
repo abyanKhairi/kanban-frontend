@@ -17,8 +17,8 @@ export default function ProtectedRoute({ children }: Props) {
         <div>
             <NavbarLayout />
             < SidebarLayout />
-            <div className={`${isProfilePage ? 'p-4 ' : 'p-4 sm:ml-64'}`}>
-                <div className={`${isProfilePage ? 'p-4 mx-10 mt-16' : 'p-4 ml-11 mt-32'} ${isTeamsPage ? 'p-4 mx-10 mt-16' : ''} `}>
+            <div className={`${isProfilePage ? 'p-6 ' : 'p-10 sm:ml-52'}`}>
+                <div className={`${isProfilePage ? 'mx-10 mt-16' : 'mx-12 mt-32'} ${isTeamsPage ? 'mx-10 mt-16' : ''} `}>
                     <div>
                         {children}
                     </div>
