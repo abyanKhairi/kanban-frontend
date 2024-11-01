@@ -70,7 +70,7 @@ export const UserProvider = ({ children }: Props) => {
                                     icon: "warning",
                                     confirmButtonText: "OK",
                                 });
-                                logout();
+                                forceLogout()
                             }
                         }
                     }, timeUntilRefresh);
@@ -150,6 +150,15 @@ export const UserProvider = ({ children }: Props) => {
             navigate("/login");
         }
     };
+
+    const forceLogout = async () => {
+        toast.success("Logout Session Expired");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        setToken(null);
+        navigate("/login");
+    }
 
     const UserUpdateName = async (name: string) => {
         try {
