@@ -41,36 +41,53 @@ export const UserProvider = ({ children }: Props) => {
                 // console.log("Decoded token:", decodedToken);
                 const expirationTime = decodedToken.exp * 1000;
                 const currentTime = Date.now();
-                // console.log("Exp time:", expirationTime, "Current time:", currentTime);
+                console.log("Exp time:", expirationTime, "Current time:", currentTime);
 
                 setToken(savedToken);
                 setUser(JSON.parse(savedUser || "{}"));
                 axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
 
                 //menit * detik * mildetik
-                const refreshThreshold = 5 * 60 * 1000;
+                const refreshThreshold = 1 * 60 * 1000;
                 const timeUntilRefresh = expirationTime - currentTime - refreshThreshold;
-                // console.log("Time refresh:", timeUntilRefresh);
+                console.log("Time refresh:", timeUntilRefresh);
 
                 if (timeUntilRefresh > 0) {
                     const refreshTimeout = setTimeout(async () => {
                         try {
                             const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
                             const newToken = response.data.token;
-                            // console.log("token Baru :", newToken);
+                            console.log("token Baru :", newToken);
                             localStorage.setItem("token", newToken);
                             setToken(newToken);
                             axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
                         } catch (error) {
-                            if (error.response && error.response.status === 401) {
-                                console.error("Failed to refresh token:", error);
-                                await Swal.fire({
-                                    title: "Session Expired",
-                                    text: "Your session has expired. Please log in again.",
-                                    icon: "warning",
-                                    confirmButtonText: "OK",
-                                });
-                                forceLogout()
+                            if (timeUntilRefresh > 0) {
+                                const refreshTimeout = setTimeout(async () => {
+                                    try {
+                                        const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
+                                        const newToken = response.data.token;
+                                        console.log("token Baru :", newToken);
+                                        localStorage.setItem("token", newToken);
+                                        setToken(newToken);
+                                        axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+                                    } catch (error) {
+                                        console.log(error)
+                                        if (error.response && error.response.status === 401) {
+                                            console.error("Failed to refresh token:", error);
+                                            await Swal.fire({
+                                                title: "Session Expired",
+                                                text: "Your session has expired. Please log in again.",
+                                                icon: "warning",
+                                                confirmButtonText: "OK",
+                                            });
+                                            forceLogout()
+                                        }
+                                    }
+                                }, timeUntilRefresh);
+
+                                setIsReady(true);
+                                return () => clearTimeout(refreshTimeout);
                             }
                         }
                     }, timeUntilRefresh);
@@ -84,7 +101,29 @@ export const UserProvider = ({ children }: Props) => {
                 logout();
             }
         }
+
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                if (error.response && error.response.status === 401) {
+                    await Swal.fire({
+                        title: "Session Expired",
+                        text: "Your session has expired. Please log in again.",
+                        icon: "warning",
+                        confirmButtonText: "OK",
+                    });
+
+                    forceLogout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
         setIsReady(true);
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
 
