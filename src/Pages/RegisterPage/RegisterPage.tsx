@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from "yup";
 import { useAuth } from '../../Context/useAuth';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion'; // Import motion
 import line from "../../assets/VELO/line.png"
@@ -53,8 +53,8 @@ export default function RegisterPage({ }: Props) {
     const location = useLocation();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isPasswordConfirmVisible, setIsPasswordConfirmVisible] = useState(false);
-    
-    
+
+
     useEffect(() => {
         if (isLoggedIn()) {
             navigate('/dashboard', { state: { from: location }, replace: true });
@@ -162,7 +162,7 @@ export default function RegisterPage({ }: Props) {
                             <input
                                 type="checkbox"
                                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                onChange={()    => setIsAgree(!isAgree)}
+                                onChange={() => setIsAgree(!isAgree)}
                             />
                             <label htmlFor="terms" className="text-gray-600 ml-2">I Agree to the terms & policy</label>
                         </div>
@@ -190,7 +190,7 @@ export default function RegisterPage({ }: Props) {
                                 Sign in with GitHub
                             </button>
                         </div>
-                        <p className="text-center mt-4 font-medium text-sm">Have an account? <a href="/login" className="text-blue-500">Sign In</a></p>
+                        <p className="text-center mt-4 font-medium text-sm">Have an account? <Link to="/login" className="text-blue-500">Sign In</Link></p>
                     </form>
                 </motion.div>
                 <motion.div
@@ -210,7 +210,7 @@ export default function RegisterPage({ }: Props) {
                     ></div>
                 </motion.div>
 
-               
+
             </div>
         </AnimatePresence>
     );

@@ -5,6 +5,7 @@ import { loginAPI, RegisterAPI, UserUpdateAvatarAPI, UserUpdateEmailAPI, UserUpd
 import { toast } from "react-toastify";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { jwtDecode } from "jwt-decode";
 
 type UserContextType = {
     user: UserProfile | null;
@@ -30,40 +31,63 @@ export const UserProvider = ({ children }: Props) => {
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
+        // console.log("useEffect triggered");
         const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
-    
+
         if (savedToken) {
-            setToken(savedToken);
-            setUser(JSON.parse(savedUser || "{}"));
-            axios.defaults.headers.common["Authorization"] = "Bearer " + savedToken;
-        }
-    
-        const interceptor = axios.interceptors.response.use(
-            (response) => response,
-            async (error) => {
-                if (error.response && error.response.status === 401) {
-                    await Swal.fire({
-                        title: "Session Expired",
-                        text: "Your session has expired. Please log in again.",
-                        icon: "warning",
-                        confirmButtonText: "OK",
-                    });
-                    
-                    // Clear user data and redirect to login
-                    logout();
+            try {
+                const decodedToken = jwtDecode(savedToken);
+                // console.log("Decoded token:", decodedToken);
+                const expirationTime = decodedToken.exp * 1000;
+                const currentTime = Date.now();
+                // console.log("Exp time:", expirationTime, "Current time:", currentTime);
+
+                setToken(savedToken);
+                setUser(JSON.parse(savedUser || "{}"));
+                axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+
+                //menit * detik * mildetik
+                const refreshThreshold = 5 * 60 * 1000;
+                const timeUntilRefresh = expirationTime - currentTime - refreshThreshold;
+                // console.log("Time refresh:", timeUntilRefresh);
+
+                if (timeUntilRefresh > 0) {
+                    const refreshTimeout = setTimeout(async () => {
+                        try {
+                            const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
+                            const newToken = response.data.token;
+                            // console.log("token Baru :", newToken);
+                            localStorage.setItem("token", newToken);
+                            setToken(newToken);
+                            axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+                        } catch (error) {
+                            if (error.response && error.response.status === 401) {
+                                console.error("Failed to refresh token:", error);
+                                await Swal.fire({
+                                    title: "Session Expired",
+                                    text: "Your session has expired. Please log in again.",
+                                    icon: "warning",
+                                    confirmButtonText: "OK",
+                                });
+                                logout();
+                            }
+                        }
+                    }, timeUntilRefresh);
+
+                    setIsReady(true);
+                    return () => clearTimeout(refreshTimeout);
                 }
-                return Promise.reject(error);
+
+            } catch (error) {
+                console.error("Error decoding token:", error);
+                logout();
             }
-        );
-    
+        }
         setIsReady(true);
-    
-        return () => {
-            axios.interceptors.response.eject(interceptor);
-        };
-    }, [navigate]);
-    
+    }, []);
+
+
     const registerUser = async (email: string, name: string, password: string, password_confirmation: string) => {
         try {
             const res = await RegisterAPI(email, name, password, password_confirmation);
@@ -108,7 +132,7 @@ export const UserProvider = ({ children }: Props) => {
     };
 
     const logout = async () => {
-        await Swal.fire({
+        const result = await Swal.fire({
             title: "Are you sure?",
             text: "Do you really want to log out?",
             icon: "question",
@@ -117,12 +141,14 @@ export const UserProvider = ({ children }: Props) => {
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, Logout",
         });
-        toast.success("Logout Success!");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setUser(null);
-        setToken(null);
-        navigate("/login");
+        if (result.isConfirmed) {
+            toast.success("Logout Success!");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+            setToken(null);
+            navigate("/login");
+        }
     };
 
     const UserUpdateName = async (name: string) => {
@@ -170,6 +196,7 @@ export const UserProvider = ({ children }: Props) => {
         }
     };
 
+
     return (
         <UserContext.Provider value={{
             loginUser,
@@ -183,7 +210,7 @@ export const UserProvider = ({ children }: Props) => {
             UserUpdatePassword,
             UserUpdateAvatar,
         }}>
-            {isReady ? children : null}
+            {isReady ? children : <div>Loading...</div>}
         </UserContext.Provider>
     );
 };
