@@ -53,7 +53,7 @@ export const UserProvider = ({ children }: Props) => {
             setUser(JSON.parse(savedUser || "{}"));
             axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
 
-            const refreshThreshold = 5 * 60 * 1000;
+            const refreshThreshold = 1 * 60 * 1000;
             const timeUntilRefresh = expirationTime - currentTime - refreshThreshold;
 
             if (timeUntilRefresh > 0) {
@@ -88,6 +88,12 @@ export const UserProvider = ({ children }: Props) => {
             (response) => response,
             async (error) => {
                 if (error.response && error.response.status === 401) {
+                    await Swal.fire({
+                        title: "Session Expired",
+                        text: "Your session has expired. Please log in again.",
+                        icon: "warning",
+                        confirmButtonText: "OK",
+                    });
                     forceLogout();
                 }
                 return Promise.reject(error);
@@ -162,6 +168,7 @@ export const UserProvider = ({ children }: Props) => {
     };
 
     const forceLogout = async () => {
+
         toast.success("Logout Session Expired");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
