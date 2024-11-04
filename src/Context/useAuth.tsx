@@ -69,7 +69,7 @@ export const UserProvider = ({ children }: Props) => {
                         forceLogout();
                     }
                 }, timeUntilRefresh);
-
+                setIsReady(true);
                 return () => clearTimeout(refreshTimeout);
             }
 
@@ -99,6 +99,8 @@ export const UserProvider = ({ children }: Props) => {
                 return Promise.reject(error);
             }
         );
+
+        setIsReady(true);
 
         return () => {
             axios.interceptors.response.eject(interceptor);
@@ -137,11 +139,12 @@ export const UserProvider = ({ children }: Props) => {
                 toast.success("Login Success!");
                 navigate("/dashboard");
             }
-        } catch (error: any) {
-            if (error.response && error.response.status === 401) {
+        } catch (error) {
+            // console.log(error.status)
+            if (error && error.status === 401) {
                 toast.error("Email or password is incorrect!");
             } else {
-                toast.error("Error: " + (error.response?.data.message || "Please try again."));
+                toast.error("Error: " + (error?.data.message || "Please try again."));
             }
         }
     };
