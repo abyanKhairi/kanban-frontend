@@ -30,55 +30,13 @@ export default function BoardDetailPage() {
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: { distance: 17 },
     }));
+    const { user } = useAuth();
+
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const columnsId = useMemo(() => columns.map((column) => column.id), [columns]);
     const [collaborator, setCollaborator] = useState(false)
-    // const [permissions, set] = useState<UserPermissions | null>(null)
-    // useEffect(() => {
-    //     const fetchBoard = async () => {
-    //         try {
-    //             if (id) {
-    //                 const boardData = await getBoardById(Number(id));
-    //                 if (boardData) {
-    //                     setBoard(boardData);
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to fetch board:", error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchBoard();
-    // }, [id, getBoardById]);
-
-    // useEffect(() => {
-    //     const fetchColumns = async () => {
-    //         try {
-    //             if (id) {
-    //                 const columnData = await ColumnGet(Number(id));
-    //                 if (columnData) {
-    //                     const updatedColumns = columnData.map(col => ({
-    //                         ...col,
-    //                         tasks: col.task || []
-    //                     }));
-    //                     setColumns(updatedColumns);
-    //                 }
-    //             } else {
-    //                 setColumns([]);
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to fetch columns:", error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchColumns();
-    // }, [id, ColumnGet]);
-
-    // console.log(permissions?.user_id)
 
     const [collaborators, setCollaborators] = useState([]);
     useEffect(() => {
@@ -147,54 +105,7 @@ export default function BoardDetailPage() {
     }, [id, ColumnGet]);
 
 
-    // const debouncedFetchBoard = useCallback(
-    //     debounce(async (boardId: number) => {
-    //         try {
-    //             // if (!isLoggedIn) return;
-    //             const boardData = await getBoardById(boardId);
-    //             if (boardData) {
-    //                 setBoard(boardData);
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to fetch board:", error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     }, 300), [getBoardById, isLoggedIn] // 300ms debounce
-    // );
 
-    // const debouncedFetchColumns = useCallback(
-    //     debounce(async (boardId: number) => {
-    //         try {
-    //             const columnData = await ColumnGet(boardId);
-    //             if (columnData) {
-    //                 const updatedColumns = columnData.map(col => ({
-    //                     ...col,
-    //                     tasks: col.task || []
-    //                 }));
-    //                 setColumns(updatedColumns);
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to fetch columns:", error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     }, 300), [ColumnGet]
-    // );
-
-    // useEffect(() => {
-    //     if (id) {
-    //         setLoading(true);
-    //         debouncedFetchBoard(Number(id));
-    //     }
-    // }, [id, debouncedFetchBoard]);
-
-    // useEffect(() => {
-    //     if (id) {
-    //         setLoading(true);
-    //         debouncedFetchColumns(Number(id));
-    //     }
-    // }, [id, debouncedFetchColumns]);
 
 
     useEffect(() => {
@@ -266,6 +177,7 @@ export default function BoardDetailPage() {
                     description: data.data.description,
                     deadline: data.data.deadline,
                     status: data.data.status,
+                    user_id: data.data.user_id
                 };
                 toast.success("Task Added")
                 setColumns(prevColumns => prevColumns.map(col =>
@@ -464,99 +376,9 @@ export default function BoardDetailPage() {
         }
     };
 
-    // const onDragEnd = async (event: DragEndEvent) => {
-    //     const { active, over } = event;
-    //     setActiveColumn(null);
-    //     setActiveTask(null);
-
-    //     if (!over) return;
-
-    //     const activeData = active.data.current;
-    //     const overData = over.data.current;
-
-    //     if (activeData?.type === "Task") {
-    //         const activeColumnId = activeData.tasks.column_id;
-    //         const overColumnId = overData?.column?.id || overData?.task?.id || activeColumnId;
-
-    //         if (activeColumnId === overColumnId) {
-    //             const activeColumn = columns.find(col => col.id === activeColumnId);
-    //             const activeTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === active.id);
-    //             const overTaskIndex = activeColumn?.tasks.findIndex(task => `task-${task.id}` === over.id);
-
-    //             if (activeTaskIndex !== undefined && overTaskIndex !== undefined) {
-    //                 const newTasks = arrayMove(activeColumn.tasks, activeTaskIndex, overTaskIndex);
-    //                 setColumns(prevColumns => prevColumns.map(col =>
-    //                     col.id === activeColumnId ? { ...col, tasks: newTasks } : col
-    //                 ));
-
-    //                 try {
-    //                     await axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${active.id.replace("task-", "")}`, { position: overTaskIndex });
-    //                 } catch (error) {
-    //                     console.error('Error updating task position:', error);
-    //                 }
-    //             }
-    //         } else {
-    //             const activeColumn = columns.find(col => col.id === activeColumnId);
-    //             const overColumn = columns.find(col => col.id === overColumnId);
-    //             const taskToMove = activeColumn.tasks.find(task => `task-${task.id}` === active.id);
-
-    //             if (taskToMove) {
-    //                 const updatedActiveTasks = activeColumn.tasks.filter(task => `task-${task.id}` !== active.id);
-    //                 const newOverTasks = [...(overColumn.tasks || []), { ...taskToMove, column_id: overColumn.id }];
-
-    //                 setColumns(prevColumns => prevColumns.map(col => {
-    //                     if (col.id === activeColumnId) {
-    //                         return { ...col, tasks: updatedActiveTasks };
-    //                     }
-    //                     if (col.id === overColumnId) {
-    //                         return { ...col, tasks: newOverTasks };
-    //                     }
-    //                     return col;
-    //                 }));
-
-    //                 try {
-    //                     await Promise.all([
-    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-column/${taskToMove.id}`, { column_id: overColumn.id }),
-    //                         axios.put(`http://127.0.0.1:8000/api/kanban/board/column-task/task-position/${taskToMove.id}`, { position: newOverTasks.length - 1 })
-    //                     ]);
-    //                 } catch (error) {
-    //                     console.error('Error moving task to new column:', error);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     else if (activeData?.type === "Column") {
-    //         const activeIndex = columns.findIndex(col => col.id === active.id);
-    //         const overIndex = columns.findIndex(col => col.id === over.id);
-
-    //         if (activeIndex !== overIndex) {
-    //             const newColumns = arrayMove(columns, activeIndex, overIndex);
-    //             setColumns(newColumns);
-
-    //             try {
-    //                 const positionUpdates = newColumns.map((column, index) =>
-    //                     axios.put(`http://127.0.0.1:8000/api/kanban/board/column-position/${column.id}`, { position: index })
-    //                 );
-    //                 await Promise.all(positionUpdates);
-    //             } catch (error) {
-    //                 console.error('Error updating column positions:', error);
-    //                 setColumns(columns);
-    //             }
-    //         }
-    //     }
-    // };
-
     return (
 
         <div>
-
-            {/* <button onClick={openModal} className="py-2 px-5 float-right rounded bg-orange-300 hover:bg-orange-500 font-semibold mr-2">
-                Edit Board
-            </button>
-            <button onClick={deleteBoard} className="py-2 px-5 float-right rounded bg-red-300 hover:bg-red-500 font-semibold">
-                Delete Board
-            </button> */}
-
 
             <div className="pb-10">
                 <div className="mb-20">
