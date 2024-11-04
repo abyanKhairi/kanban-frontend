@@ -30,101 +30,75 @@ export const UserProvider = ({ children }: Props) => {
     const [user, setUser] = useState<UserProfile | null>(null);
     const [isReady, setIsReady] = useState(false);
 
+
+    const isLoggedIn = () => {
+        return !!token;
+    };
+
     useEffect(() => {
-        // console.log("useEffect triggered");
         const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
 
-        if (savedToken) {
-            try {
-                const decodedToken = jwtDecode(savedToken);
-                // console.log("Decoded token:", decodedToken);
-                const expirationTime = decodedToken.exp * 1000;
-                const currentTime = Date.now();
-                console.log("Exp time:", expirationTime, "Current time:", currentTime);
-
-                setToken(savedToken);
-                setUser(JSON.parse(savedUser || "{}"));
-                axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
-
-                //menit * detik * mildetik
-                const refreshThreshold = 1 * 60 * 1000;
-                const timeUntilRefresh = expirationTime - currentTime - refreshThreshold;
-                console.log("Time refresh:", timeUntilRefresh);
-
-                if (timeUntilRefresh > 0) {
-                    const refreshTimeout = setTimeout(async () => {
-                        try {
-                            const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
-                            const newToken = response.data.token;
-                            console.log("token Baru :", newToken);
-                            localStorage.setItem("token", newToken);
-                            setToken(newToken);
-                            axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-                        } catch (error) {
-                            if (timeUntilRefresh > 0) {
-                                const refreshTimeout = setTimeout(async () => {
-                                    try {
-                                        const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
-                                        const newToken = response.data.token;
-                                        console.log("token Baru :", newToken);
-                                        localStorage.setItem("token", newToken);
-                                        setToken(newToken);
-                                        axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-                                    } catch (error) {
-                                        console.log(error)
-                                        if (error.response && error.response.status === 401) {
-                                            console.error("Failed to refresh token:", error);
-                                            await Swal.fire({
-                                                title: "Session Expired",
-                                                text: "Your session has expired. Please log in again.",
-                                                icon: "warning",
-                                                confirmButtonText: "OK",
-                                            });
-                                            forceLogout()
-                                        }
-                                    }
-                                }, timeUntilRefresh);
-
-                                setIsReady(true);
-                                return () => clearTimeout(refreshTimeout);
-                            }
-                        }
-                    }, timeUntilRefresh);
-
-                    setIsReady(true);
-                    return () => clearTimeout(refreshTimeout);
-                }
-
-            } catch (error) {
-                console.error("Error decoding token:", error);
-                logout();
-            }
+        if (!savedToken) {
+            setIsReady(true);
+            return;
         }
+
+        try {
+            const decodedToken = jwtDecode(savedToken);
+            const expirationTime = decodedToken.exp * 1000;
+            const currentTime = Date.now();
+
+            setToken(savedToken);
+            setUser(JSON.parse(savedUser || "{}"));
+            axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+
+            const refreshThreshold = 5 * 60 * 1000;
+            const timeUntilRefresh = expirationTime - currentTime - refreshThreshold;
+
+            if (timeUntilRefresh > 0) {
+                const refreshTimeout = setTimeout(async () => {
+                    try {
+                        const response = await axios.post("http://127.0.0.1:8000/api/auth/refresh");
+                        const newToken = response.data.token;
+                        localStorage.setItem("token", newToken);
+                        setToken(newToken);
+                        axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+                    } catch (error) {
+                        console.error("Failed to refresh token:", error);
+                        forceLogout();
+                    }
+                }, timeUntilRefresh);
+
+                return () => clearTimeout(refreshTimeout);
+            }
+
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            logout();
+        }
+
+        setIsReady(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isLoggedIn()) return;
 
         const interceptor = axios.interceptors.response.use(
             (response) => response,
             async (error) => {
                 if (error.response && error.response.status === 401) {
-                    await Swal.fire({
-                        title: "Session Expired",
-                        text: "Your session has expired. Please log in again.",
-                        icon: "warning",
-                        confirmButtonText: "OK",
-                    });
-
                     forceLogout();
                 }
                 return Promise.reject(error);
             }
         );
 
-        setIsReady(true);
-
         return () => {
             axios.interceptors.response.eject(interceptor);
         };
-    }, []);
+    }, [isLoggedIn]);
+
 
 
     const registerUser = async (email: string, name: string, password: string, password_confirmation: string) => {
@@ -166,9 +140,6 @@ export const UserProvider = ({ children }: Props) => {
         }
     };
 
-    const isLoggedIn = () => {
-        return !!token;
-    };
 
     const logout = async () => {
         const result = await Swal.fire({
