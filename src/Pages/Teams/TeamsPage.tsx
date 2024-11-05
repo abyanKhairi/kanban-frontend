@@ -69,7 +69,7 @@ const teamMembers = [
 export default function TeamsPage({ }: Props) {
     return (
         <>
-            <div className="text-center -mt-5">
+            <div className="text-center mt-5 mb-5">
                 <div className="">
                     <p className="text-slate-400" >Behind The Food</p>
                     <h1 className="font-bold text-4xl 2xl:text-5xl my-3">Meet the Cooker</h1>
@@ -103,6 +103,9 @@ export default function TeamsPage({ }: Props) {
                         <div className="flex-grow">
                             <h2 className="text-lg font-semibold">{member.name}</h2>
                             <p className="text-gray-800 text-sm">{member.role}</p>
+                        </div>
+
+                        <div className="flex-grow">
                             <p className="mt-2 italic text-sm text-gray-500">"{member.quote}"</p>
                         </div>
 
@@ -120,4 +123,3 @@ export default function TeamsPage({ }: Props) {
         </>
     );
 };
-
