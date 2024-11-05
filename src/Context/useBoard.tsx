@@ -44,7 +44,7 @@ export const BoardProvider = ({ children }: Props) => {
     const [fourBoard, setFourBoard] = useState<Board[]>([]);
     const { isLoggedIn } = useAuth()
     const [permissions, setPermissions] = useState<[]>([]);
-
+    const { user } = useAuth()
     // console.log(permissions)
 
 
@@ -55,16 +55,14 @@ export const BoardProvider = ({ children }: Props) => {
         try {
             const res = await BoardGetAPI();
             setBoard(res.data.data);
-            // console.log(res)
         } catch (e) {
-            // toast.error("Error fetching boards");
         }
     };
 
     useEffect(() => {
         if (!isLoggedIn()) return;
         GetBoards();
-    }, [isLoggedIn]);
+    }, [user?.id]);
 
 
 
@@ -73,14 +71,13 @@ export const BoardProvider = ({ children }: Props) => {
             const res = await FourBoardAPI();
             setFourBoard(res.data.data);
         } catch (e) {
-            // toast.error("Error fetching boards");
         }
     };
 
     useEffect(() => {
         if (!isLoggedIn()) return;
         GetBoardFour();
-    }, [isLoggedIn]);
+    }, [user?.id]);
 
 
     const getBoardById = async (id: number): Promise<Board | null> => {
