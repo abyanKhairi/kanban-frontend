@@ -112,7 +112,7 @@ const SidebarLayout = () => {
                             fourBoard.map((board) => (
                             <Card
                                 key={board.id}
-                                className={`max-w-36 max-h-16 justify-center mb-5 ${
+                                className={`max-w-36 max-h-16 justify-center mb-5 cursor-pointer ${
                                 board.id === currentBoardId ? 'bg-slate-100 !text-sky-500' : ''
                                 }`}
                                 onDoubleClick={() => handleNavigateToBoard(board.id)}
