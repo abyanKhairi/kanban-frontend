@@ -77,7 +77,7 @@ export const BoardProvider = ({ children }: Props) => {
     useEffect(() => {
         if (!isLoggedIn()) return;
         GetBoardFour();
-    }, [user?.id]);
+    }, [isLoggedIn]);
 
 
     const getBoardById = async (id: number): Promise<Board | null> => {
