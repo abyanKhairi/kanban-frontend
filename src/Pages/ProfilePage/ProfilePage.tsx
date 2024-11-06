@@ -204,10 +204,10 @@ export default function ProfilePage({ }: Props) {
                     className="absolute z-10 top-0 left-0 w-full h-full rounded-t-lg bg-cover bg-center"
                     style={{
                         backgroundImage: `url(${line})`,
-                        opacity: 0.2,
+                        opacity: 0.1,
                     }}
                 />
-                <div className="absolute top-0 left-0 w-full h-full rounded-t-lg bg-[#54afe5] " />
+                <div className="absolute top-0 left-0 w-full h-full rounded-t-lg bg-[#0095FF] " />
                 <div className="bg-[#FBF8F8] rounded-lg gap-8 pb-54 shadow-lg p-6">
                     <div className="flex ml-12 items-center mb-14 ">
                         <div className=" flex z-10">
@@ -216,22 +216,22 @@ export default function ProfilePage({ }: Props) {
 
                                 src={`/src/assets/avatar/` + avatar}
                                 alt="User"
-                                className="w-56 h-56 rounded-full bg-white border-[#54afe5] border-1  mr-6 z-10 "
+                                className={`w-48 h-48 shadow-lg rounded-full bg-white shadow-[#0095FF]  mt-8  mr-6 z-10 ${formEmail ? 'mt-[10px]' : ''} ${formPassword ? '-mt-[92px]' : ''} `}
                             />
 
                             <form
-                                className={`${formAvatar ? 'block' : 'hidden'}`}
+                                className={`${formAvatar ? 'block mt-10' : 'hidden'}`}
                                 onSubmit={handleUpdateAvatar}
                             >
                                 <div className="space-y-6 text-center items-center justify-center">
-                                    <h3 className="text-xl font-medium text-gray-900 dark:text-white">Element Bender</h3>
-                                    <div className="flex flex-wrap space-x-4 justify-center">
+                                    <h1 className="text-2xl font-bold   text-gray-100 rounded-full bg-[#0095FF] dark:text-white">Element Bender</h1>
+                                    <div className="flex flex-wrap space-x-4  justify-center">
                                         {avatars.map((avatarImage, index) => (
                                             <div key={index} className="flex flex-col items-center">
                                                 <img
                                                     src={avatarImage.src}
                                                     alt={avatarImage.name}
-                                                    className={`w-20 h-20 rounded-full cursor-pointer ${avatar === avatarImage.name ? 'border-2 border-blue-500' : ''}`}
+                                                    className={`w-20 h-20 rounded-full cursor-pointer ${avatar === avatarImage.name ? 'border-[3px] border-blue-700' : 'border-2 border-blue-300'}`}
                                                     onClick={() => setAvatar(avatarImage.name)}
                                                 />
                                                 <Label htmlFor={`avatar${index + 1}`}>{avatarImage.title}</Label>
@@ -246,24 +246,23 @@ export default function ProfilePage({ }: Props) {
                                     </button>
                                 </div>
                             </form>
-
                         </div>
-                        <div className={`z-10 mt-14 ${formAvatar ? 'hidden' : 'block'} `} >
+                        <div className={`z-10 mt-[5rem] ${formAvatar ? 'hidden' : 'block'} `} >
                             <h2
-                                className={`${formName ? 'hidden' : 'block'} text-2xl font-bold`}
-                                style={{ minHeight: '40px' }}
+                                className={`${formName ? 'hidden' : 'block'} ${formEmail ? 'mt-[39px]' : ''} ${formPassword ? 'mt-[39px]' : ''} text-2xl font-bold`}
+                                style={{ minHeight: '38px' }}
                             >
                                 {user.name}
                             </h2>
                             <form
-                                className={`${formName ? 'block' : 'hidden'}`}
+                                className={`${formName ? 'block mt-[2px]' : 'hidden'}`}
                                 onSubmit={handleUpdateName}
                             >
                                 {/* <h3 className="text-xl font-medium text-gray-900 dark:text-white">Change Your Name</h3> */}
                                 <div className="flex gap-4 items-center">
                                     <input
                                         id="boardName"
-                                        className="text-2xl font-bold py-1 px-2 border border-gray-300 rounded"
+                                        className="text-2xl font-bold py-1 px-2 -mt-[6px] -ml-[8.7px] border border-gray-300 rounded"
                                         type="text"
                                         value={name}
                                         autoFocus
@@ -273,7 +272,7 @@ export default function ProfilePage({ }: Props) {
                                     />
                                     <button
                                         type="submit"
-                                        className="py-1 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="py-1 px-4 bg-blue-500 text-white rounded mb-1 hover:bg-blue-600"
                                     >
                                         Update Name
                                     </button>
@@ -287,10 +286,10 @@ export default function ProfilePage({ }: Props) {
                                     <div className="grid  gap-3">
                                         <div className="">
 
-                                            <label htmlFor="currentPassword">Current Password</label>
+                                            <label htmlFor="currentPassword" className="font-semibold">Current Password</label>
                                             <div>
                                                 <input
-                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    className="py-2 px-4 border border-gray-300 rounded"
                                                     id="currentPassword" type="password" placeholder="Current Password" value={current_password} onChange={(e) =>
                                                         setCurrent_Password(e.target.value)}
                                                 />
@@ -299,18 +298,17 @@ export default function ProfilePage({ }: Props) {
 
                                         <div className="gap-2 flex">
                                             <div className="mb-2 grid">
-                                                <label htmlFor="currentPassword">Current Password</label>
+                                                <label htmlFor="currentPassword" className="font-semibold" >New Password</label>
                                                 <input
-                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    className="py-2 px-4 border border-gray-300 rounded"
                                                     id="newPassword" type="password" placeholder="New Password" value={new_password} onChange={(e) =>
                                                         setNew_Password(e.target.value)}
                                                 />
                                             </div>
                                             <div className="mb-2 grid">
-
-                                                <label htmlFor="currentPassword">Current Password</label>
+                                                <label htmlFor="currentPassword" className="font-semibold">Confirm Password</label>
                                                 <input
-                                                    className="text-lg font-semibold py-1 px-2 border border-gray-300 rounded"
+                                                    className="py-2 px-4 border border-gray-300 rounded"
                                                     id="passwordConfirmation" placeholder="Confirm New Password" type="password" value={new_password_confirmation}
                                                     onChange={(e) => setNew_Password_confirmation(e.target.value)}
                                                 />
@@ -325,20 +323,20 @@ export default function ProfilePage({ }: Props) {
 
 
                             <p
-                                className={`${formEmail ? 'hidden' : 'block'} ${formPassword ? 'hidden' : 'block'} text-gray-600 text-xl `}>{user.email}</p>
+                                className={`${formEmail ? 'hidden' : 'block'} ${formPassword ? 'hidden' : 'block'} ${formName ? 'mt-[0.75px]' : ''} text-gray-600 text-xl `}>{user.email}</p>
 
                             <form
                                 className={`${formEmail ? 'block' : 'hidden'}`}
                                 onSubmit={handleUpdateEmail}
                             >
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 -ml-[0.8rem] -mt-[0.27rem]">
                                     <div>
                                         <input
                                             id="email"
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="text-xl py-2 px-4 border border-gray-300 rounded w-full"
+                                            className="text-xl py-1 px-3 border border-gray-300 rounded w-full"
                                             autoFocus
                                             autoComplete="off"
                                             placeholder="Enter new email"
@@ -351,7 +349,7 @@ export default function ProfilePage({ }: Props) {
                                             type={isPasswordVisible ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="text-xl py-2 px-4 border border-gray-300 rounded w-full pr-10"
+                                            className="text-xl py-1 px-4 border border-gray-300 rounded w-full pr-10"
                                             autoComplete="off"
                                             placeholder="Enter password"
                                         />
@@ -370,11 +368,6 @@ export default function ProfilePage({ }: Props) {
                                 </button>
                             </form>
                         </div>
-
-
-
-
-
 
                         <button onClick={toggleDropdown}
                             className="w-12 h-12 ml-auto mt-12 mr-16 z-10 flex items-center justify-center text-white bg-[#54afe5] rounded-full hover:bg-blue-500">
@@ -407,24 +400,28 @@ export default function ProfilePage({ }: Props) {
                     <div className="flex items-center justify-center align-middle text-center" />
 
                     {/* {formAvatar || formEmail || formName || formPassword || ( */}
-                    <div className="mt-20 mx-16">
-                        <h2 className="text-2xl font-bold mb-4">Activities</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="mt-5 mx-16">
+                        <h2 className="text-2xl font-bold mb-5">Activities</h2>
+                        <div className="grid grid-cols-4 gap-6">
                             {fourBoard && fourBoard.length > 0 ? (
-
                                 fourBoard.map((board, index) => (
                                     <div
                                         key={index}
                                         className="border rounded-lg p-4 shadow-lg bg-white"
                                     >
-                                        <p className="text-gray-500">{board.status}</p>
-                                        <h3 className="text-lg font-bold mb-2">{board.name}</h3>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
+                                       <p className="text-xs font-semibold text-gray-400">{board.status.charAt(0).toUpperCase() + board.status.slice(1)}</p>
+                                        <h3 className="text-xl font-bold my-2">{board.name}</h3>
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3 dark:bg-gray-700">
                                             <div className="bg-green-400 h-2.5 rounded-full dark:bg-blue-500" style={{ width: '75%' }}></div>
                                         </div>
-                                        <p className="text-green-500 font-bold">Owner</p>
+                                        {board.user_id === user?.id ?
+                                            (<p className="text-[#15D088] font-semibold">OWNER </p>)
+                                            : (<p className="text-[#15D088] font-semibold">COLLABORATOR</p>)}
+
                                         <hr className="mt-5 mb-4" />
-                                        <p className="text-gray-500">Created: {new Date(board.created_at).toLocaleDateString()}</p>
+                                        <p className="text-xs font-bold text-gray-500">
+                                            Created : <span className='font-semibold text-gray-400'>{board.created_at.substring(0, 10)}</span>
+                                        </p>
                                     </div>
                                 ))) : (
                                 <div className="pb-52">
